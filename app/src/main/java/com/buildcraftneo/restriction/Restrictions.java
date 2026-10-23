@@ -101,9 +101,10 @@ public final class Restrictions {
         return stack.getItem() instanceof BowItem || stack.getItem() instanceof CrossbowItem;
     }
 
-    /** Our own spell items (magic faction only). */
+    /** Our own spell/ability items (magic faction only). */
     public static boolean isSpellItem(ItemStack stack) {
-        return stack.getItem() instanceof com.buildcraftneo.item.SpellItem;
+        return stack.getItem() instanceof com.buildcraftneo.item.SpellItem
+                || stack.getItem() instanceof com.buildcraftneo.item.AbilityItem;
     }
 
     /** Our own gun items (science faction only). */

@@ -68,6 +68,14 @@ public final class BCNCommands {
                                 .executes(BCNCommands::efpAdd))))
                 .then(Commands.literal("check").then(Commands.argument("player", EntityArgument.player())
                         .executes(BCNCommands::check)))
+                .then(Commands.literal("disaster")
+                        .then(Commands.literal("trigger").executes(BCNCommands::disasterTrigger))
+                        .then(Commands.literal("threshold").then(Commands.argument("value",
+                                        IntegerArgumentType.integer(1))
+                                .executes(BCNCommands::disasterThreshold))))
+                .then(Commands.literal("vein").then(Commands.argument("pos",
+                                net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                        .executes(BCNCommands::veinMine)))
                 .then(Commands.literal("machine")
                         .then(Commands.literal("info").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
@@ -99,7 +107,14 @@ public final class BCNCommands {
                                 .then(Commands.argument("item", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
                                         .executes(BCNCommands::fakeGive))))
                         .then(Commands.literal("use").then(Commands.argument("name", StringArgumentType.word())
-                                .executes(BCNCommands::fakeUse)))));
+                                .executes(BCNCommands::fakeUse)))
+                        .then(Commands.literal("deposit").then(Commands.argument("name", StringArgumentType.word())
+                                .executes(BCNCommands::fakeDeposit)))
+                        .then(Commands.literal("withdraw").then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("amount", LongArgumentType.longArg(1))
+                                        .executes(BCNCommands::fakeWithdraw))))
+                        .then(Commands.literal("jobeffects").then(Commands.argument("name", StringArgumentType.word())
+                                .executes(BCNCommands::fakeJobEffects)))));
     }
 
     private static int info(CommandContext<CommandSourceStack> ctx) {
@@ -389,6 +404,70 @@ public final class BCNCommands {
                     + " (spawn with /bcn fake spawn)"));
         }
         return p;
+    }
+
+    private static int disasterTrigger(CommandContext<CommandSourceStack> ctx) {
+        int n = com.buildcraftneo.disaster.DisasterManager.triggerRaid(ctx.getSource().getServer());
+        tell(ctx, "raid spawned " + n + " hostiles; efp="
+                + Profiles.efp(ctx.getSource().getServer().overworld()));
+        return n;
+    }
+
+    private static int disasterThreshold(CommandContext<CommandSourceStack> ctx) {
+        com.buildcraftneo.disaster.DisasterManager.setThreshold(
+                IntegerArgumentType.getInteger(ctx, "value"));
+        tell(ctx, "disaster threshold=" + com.buildcraftneo.disaster.DisasterManager.threshold());
+        return 1;
+    }
+
+    private static int veinMine(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var level = ctx.getSource().getLevel();
+        var state = level.getBlockState(pos);
+        if (!com.buildcraftneo.util.VeinMiner.isVeinBlock(state)) {
+            ctx.getSource().sendFailure(Component.literal("not a vein block: " + state));
+            return 0;
+        }
+        // test with a dedicated fake player holding the right tool
+        ServerPlayer fake = com.buildcraftneo.test.TestFakes.get("__vein_test__");
+        if (fake == null) {
+            fake = com.buildcraftneo.test.TestFakes.spawn(ctx.getSource().getServer().overworld(), "__vein_test__");
+        }
+        ItemStack tool = com.buildcraftneo.util.VeinMiner.isRightTool(state, fake.getMainHandItem())
+                ? fake.getMainHandItem()
+                : new ItemStack(net.minecraft.world.item.Items.NETHERITE_PICKAXE);
+        int n = com.buildcraftneo.util.VeinMiner.veinMine(level, pos, fake, tool);
+        tell(ctx, "vein-mined " + n + " extra " + net.minecraft.core.registries.BuiltInRegistries.BLOCK
+                .getKey(state.getBlock()) + " blocks");
+        return n;
+    }
+
+    private static int fakeDeposit(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        long dep = com.buildcraftneo.economy.Mint.depositAll(p);
+        tell(ctx, "deposited " + dep + " MD -> balance=" + Profiles.md(p));
+        return 1;
+    }
+
+    private static int fakeWithdraw(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        long out = com.buildcraftneo.economy.Mint.withdraw(p, LongArgumentType.getLong(ctx, "amount"));
+        tell(ctx, "withdrew " + out + " MD -> balance=" + Profiles.md(p));
+        return 1;
+    }
+
+    private static int fakeJobEffects(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        com.buildcraftneo.job.JobEffects.apply(p, ctx.getSource().getServer().getTickCount());
+        tell(ctx, "applied job effects; speed=" + p.getAttributeValue(
+                net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)
+                + " attack=" + p.getAttributeValue(
+                net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
+                + " mpmax=" + Profiles.mpMax(p));
+        return 1;
     }
 
     private static ServerPlayer player(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

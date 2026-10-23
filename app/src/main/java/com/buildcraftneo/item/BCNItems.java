@@ -28,11 +28,24 @@ public final class BCNItems {
     public static Item GOLD_DUST;
     public static Item COPPER_DUST;
 
-    // magic tokens (placeholder wand for restriction testing)
+    // magic tokens
     public static Item APPRENTICE_WAND;
 
-    // science weapons (placeholder gun for restriction testing)
+    // science weapons
     public static Item SERVICE_PISTOL;
+
+    // job ability items
+    public static Item ABILITY_WARCRY;
+    public static Item ABILITY_TAUNT;
+    public static Item ABILITY_SHADOWSTEP;
+    public static Item ABILITY_SANCTUARY;
+    public static Item ABILITY_METEOR;
+    public static Item ABILITY_FROST_NOVA;
+    public static Item ABILITY_RAIN_OF_ARROWS;
+    public static Item ABILITY_PIERCE_SHOT;
+
+    /** MD value of each coin tier. */
+    public static final java.util.Map<Item, Long> COIN_VALUES = new java.util.LinkedHashMap<>();
 
     public static void register() {
         COPPER_COIN = simple("copper_coin");
@@ -47,7 +60,22 @@ public final class BCNItems {
         GOLD_DUST = simple("gold_dust");
         COPPER_DUST = simple("copper_dust");
         APPRENTICE_WAND = spell("apprentice_wand", new Item.Properties());
-        SERVICE_PISTOL = gun("service_pistol");
+        SERVICE_PISTOL = gun("service_pistol", 8.0, 8);
+        ABILITY_WARCRY = ability("ability_warcry", com.buildcraftneo.data.Job.WARRIOR, 20, 200, Abilities::warcry);
+        ABILITY_TAUNT = ability("ability_taunt", com.buildcraftneo.data.Job.GUARDIAN, 15, 200, Abilities::taunt);
+        ABILITY_SHADOWSTEP = ability("ability_shadowstep", com.buildcraftneo.data.Job.ASSASSIN, 15, 100, Abilities::shadowstep);
+        ABILITY_SANCTUARY = ability("ability_sanctuary", com.buildcraftneo.data.Job.HEALER, 25, 200, Abilities::sanctuary);
+        ABILITY_METEOR = ability("ability_meteor", com.buildcraftneo.data.Job.MAGE, 40, 300, Abilities::meteor);
+        ABILITY_FROST_NOVA = ability("ability_frost_nova", com.buildcraftneo.data.Job.MAGE, 30, 300, Abilities::frostNova);
+        ABILITY_RAIN_OF_ARROWS = ability("ability_rain_of_arrows", com.buildcraftneo.data.Job.ARCHER, 30, 300, Abilities::rainOfArrows);
+        ABILITY_PIERCE_SHOT = ability("ability_pierce_shot", com.buildcraftneo.data.Job.ARCHER, 15, 100, Abilities::pierceShot);
+
+        COIN_VALUES.put(COPPER_COIN, 1L);
+        COIN_VALUES.put(IRON_COIN, 10L);
+        COIN_VALUES.put(GOLD_COIN, 100L);
+        COIN_VALUES.put(EMERALD_COIN, 1000L);
+        COIN_VALUES.put(DIAMOND_COIN, 10000L);
+        COIN_VALUES.put(NETHERITE_COIN, 100000L);
     }
 
     private static Item simple(String name) {
@@ -62,9 +90,19 @@ public final class BCNItems {
         return Registry.register(BuiltInRegistries.ITEM, id, new FireballWandItem(props.setId(key)));
     }
 
-    private static Item gun(String name) {
+    private static Item gun(String name, double damage, int cooldownTicks) {
         Identifier id = BCN.id(name);
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
-        return Registry.register(BuiltInRegistries.ITEM, id, new GunItem(new Item.Properties().setId(key)));
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new GunItem(new Item.Properties().setId(key), damage, cooldownTicks));
+    }
+
+    private static Item ability(String name, com.buildcraftneo.data.Job job, int mpCost,
+            int cooldown, java.util.function.BiConsumer<net.minecraft.server.level.ServerPlayer,
+                    net.minecraft.server.level.ServerLevel> effect) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new AbilityItem(new Item.Properties().setId(key), job, mpCost, cooldown, effect));
     }
 }

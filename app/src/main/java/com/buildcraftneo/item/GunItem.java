@@ -4,31 +4,36 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-/**
- * Minimal firearm placeholder: fires a fast projectile on right click.
- * Real damage/handling comes in the weapons phase.
- */
+/** Simple firearm: fires a high-velocity, non-pickup arrow projectile. */
 public class GunItem extends Item {
-    public GunItem(Properties properties) {
+    private final double damage;
+    private final int cooldownTicks;
+
+    public GunItem(Properties properties, double damage, int cooldownTicks) {
         super(properties);
+        this.damage = damage;
+        this.cooldownTicks = cooldownTicks;
     }
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (player instanceof ServerPlayer sp) {
             Vec3 look = player.getLookAngle();
-            Snowball projectile = new Snowball(sp.level(), sp, new ItemStack(Items.SNOWBALL));
-            projectile.setPos(player.getX() + look.x, player.getEyeY() + look.y, player.getZ() + look.z);
-            projectile.shoot(look.x, look.y, look.z, 3.0f, 0.0f);
-            sp.level().addFreshEntity(projectile);
-            player.getCooldowns().addCooldown(player.getItemInHand(hand), 10);
+            Arrow bullet = new Arrow(sp.level(), sp,
+                    new ItemStack(Items.ARROW), player.getItemInHand(hand));
+            bullet.setPos(player.getX() + look.x, player.getEyeY() + look.y, player.getZ() + look.z);
+            bullet.shoot(look.x, look.y, look.z, 5.0f, 1.0f);
+            bullet.setBaseDamage(damage);
+            bullet.pickup = net.minecraft.world.entity.projectile.arrow.AbstractArrow.Pickup.DISALLOWED;
+            sp.level().addFreshEntity(bullet);
+            player.getCooldowns().addCooldown(player.getItemInHand(hand), cooldownTicks);
         }
         return InteractionResult.SUCCESS_SERVER;
     }
