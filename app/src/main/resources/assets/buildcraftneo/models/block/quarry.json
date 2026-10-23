@@ -1,0 +1,1 @@
+{ "parent": "minecraft:block/orientable", "textures": { "top": "buildcraftneo:block/quarry_top", "front": "buildcraftneo:block/quarry_front", "side": "buildcraftneo:block/quarry_side" } }

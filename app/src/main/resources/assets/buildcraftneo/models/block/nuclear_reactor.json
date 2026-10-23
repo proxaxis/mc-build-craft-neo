@@ -1,0 +1,1 @@
+{ "parent": "minecraft:block/orientable", "textures": { "top": "buildcraftneo:block/nuclear_reactor_top", "front": "buildcraftneo:block/nuclear_reactor_front_active", "side": "buildcraftneo:block/nuclear_reactor_sides" } }

@@ -1,0 +1,1 @@
+{ "parent": "minecraft:block/orientable", "textures": { "top": "buildcraftneo:block/dynamo_side", "front": "buildcraftneo:block/engine_front", "side": "buildcraftneo:block/engine_side" } }

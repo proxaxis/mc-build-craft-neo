@@ -1,0 +1,1 @@
+{ "parent": "minecraft:block/orientable", "textures": { "top": "buildcraftneo:block/shop_side", "front": "buildcraftneo:block/shop_front", "side": "buildcraftneo:block/shop_side" } }
