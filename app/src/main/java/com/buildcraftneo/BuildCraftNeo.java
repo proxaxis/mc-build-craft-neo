@@ -26,6 +26,7 @@ public class BuildCraftNeo implements ModInitializer {
         Restrictions.register();
         JobEffects.register();
         DisasterManager.register();
+        com.buildcraftneo.dim.DimBuffs.register();
         VeinMiner.register();
         BCNCommands.register();
         net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {

@@ -102,6 +102,16 @@ public final class BCNCommands {
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
                                 .then(Commands.argument("item", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
                                         .executes(BCNCommands::machineRequest)))))
+                .then(Commands.literal("shop")
+                        .then(Commands.literal("offer").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .then(Commands.argument("item", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
+                                        .then(Commands.argument("price", LongArgumentType.longArg(1))
+                                                .executes(BCNCommands::shopOffer)))))
+                        .then(Commands.literal("collect").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .then(Commands.argument("player", StringArgumentType.word())
+                                        .executes(BCNCommands::shopCollect)))))
                 .then(Commands.literal("fake")
                         .then(Commands.literal("list").executes(BCNCommands::fakeList))
                         .then(Commands.literal("spawn").then(Commands.argument("name", StringArgumentType.word())
@@ -124,6 +134,10 @@ public final class BCNCommands {
                         .then(Commands.literal("withdraw").then(Commands.argument("name", StringArgumentType.word())
                                 .then(Commands.argument("amount", LongArgumentType.longArg(1))
                                         .executes(BCNCommands::fakeWithdraw))))
+                        .then(Commands.literal("buy").then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("pos",
+                                                net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                        .executes(BCNCommands::fakeBuy))))
                         .then(Commands.literal("jobeffects").then(Commands.argument("name", StringArgumentType.word())
                                 .executes(BCNCommands::fakeJobEffects)))));
     }
@@ -534,6 +548,59 @@ public final class BCNCommands {
         var item = net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "item").item().value();
         rp.setRequested(item);
         tell(ctx, "request=" + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item));
+        return 1;
+    }
+
+    private static int shopOffer(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.ShopBlockEntity shop)) {
+            ctx.getSource().sendFailure(Component.literal("no shop at " + pos.toShortString()));
+            return 0;
+        }
+        var item = net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "item").item().value();
+        long price = LongArgumentType.getLong(ctx, "price");
+        ServerPlayer owner = ctx.getSource().getPlayer();
+        shop.setOffer(item, price, owner == null ? "" : owner.getName().getString());
+        tell(ctx, shop.status());
+        return 1;
+    }
+
+    private static int shopCollect(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.ShopBlockEntity shop)) {
+            ctx.getSource().sendFailure(Component.literal("no shop at " + pos.toShortString()));
+            return 0;
+        }
+        String name = StringArgumentType.getString(ctx, "player");
+        ServerPlayer p = ctx.getSource().getServer().getPlayerList().getPlayerByName(name);
+        if (p == null) p = TestFakes.get(name);
+        if (p == null) {
+            ctx.getSource().sendFailure(Component.literal("no player/fake " + name));
+            return 0;
+        }
+        long paid = shop.collectTo(p);
+        if (paid < 0) {
+            ctx.getSource().sendFailure(Component.literal("not the shop owner"));
+            return 0;
+        }
+        tell(ctx, "collected " + paid + " MD -> " + p.getName().getString()
+                + " md=" + Profiles.md(p));
+        return 1;
+    }
+
+    private static int fakeBuy(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.ShopBlockEntity shop)) {
+            ctx.getSource().sendFailure(Component.literal("no shop at " + pos.toShortString()));
+            return 0;
+        }
+        tell(ctx, p.getName().getString() + " buy -> " + shop.sellTo(p)
+                + " | md=" + Profiles.md(p) + " | " + shop.status());
         return 1;
     }
 

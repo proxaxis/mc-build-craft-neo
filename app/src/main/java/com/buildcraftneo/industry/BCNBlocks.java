@@ -33,6 +33,8 @@ public final class BCNBlocks {
     public static Block TELEPORT_PIPE;
     public static Block NUCLEAR_REACTOR;
     public static Block REQUEST_PIPE;
+    public static Block SHOP;
+    public static Block DIMENSION_GATE;
 
     public static void register() {
         STIRLING_ENGINE = machine("stirling_engine", StirlingEngineBlockEntity::new);
@@ -42,13 +44,21 @@ public final class BCNBlocks {
         TELEPORT_PIPE = machine("teleport_pipe", TeleportPipeBlockEntity::new);
         NUCLEAR_REACTOR = machine("nuclear_reactor", NuclearReactorBlockEntity::new);
         REQUEST_PIPE = machine("request_pipe", RequestPipeBlockEntity::new);
+        SHOP = machine("shop", ShopBlockEntity::new);
+        DIMENSION_GATE = machine("dimensional_gate", DimensionGateBlockEntity::new,
+                BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.METAL).noCollision());
     }
 
     private static Block machine(String name, BlockEntityFactory factory) {
+        return machine(name, factory,
+                BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.METAL));
+    }
+
+    private static Block machine(String name, BlockEntityFactory factory,
+            BlockBehaviour.Properties props) {
         Identifier id = BCN.id(name);
         ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, id);
-        Block block = new MachineBlock(factory,
-                BlockBehaviour.Properties.of().setId(key).strength(3.0f).sound(SoundType.METAL));
+        Block block = new MachineBlock(factory, props.setId(key));
         Registry.register(BuiltInRegistries.BLOCK, id, block);
         ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, id);
         Registry.register(BuiltInRegistries.ITEM, id,
@@ -92,7 +102,17 @@ public final class BCNBlocks {
                 case TeleportPipeBlockEntity e -> TeleportPipeBlockEntity.tick(level, pos, state, e);
                 case NuclearReactorBlockEntity e -> NuclearReactorBlockEntity.tick(level, pos, state, e);
                 case RequestPipeBlockEntity e -> RequestPipeBlockEntity.tick(level, pos, state, e);
+                case DimensionGateBlockEntity e -> DimensionGateBlockEntity.tick(level, pos, state, e);
                 default -> {}
+            }
+        }
+
+        @Override
+        protected void entityInside(BlockState state, Level level, BlockPos pos,
+                net.minecraft.world.entity.Entity entity,
+                net.minecraft.world.entity.InsideBlockEffectApplier applier, boolean bl) {
+            if (level.getBlockEntity(pos) instanceof DimensionGateBlockEntity gate) {
+                gate.onEntityInside(level, entity);
             }
         }
 
@@ -102,6 +122,13 @@ public final class BCNBlocks {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MachineBlockEntity be) {
                 if (be instanceof TeleportPipeBlockEntity tp) {
                     if (player.isShiftKeyDown()) tp.cycleMode(); else tp.cycleChannel();
+                } else if (be instanceof DimensionGateBlockEntity gate) {
+                    gate.cycleTarget();
+                } else if (be instanceof ShopBlockEntity shop && !player.isShiftKeyDown()
+                        && player instanceof net.minecraft.server.level.ServerPlayer sp) {
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                            "[BCN shop] " + shop.sellTo(sp)));
+                    return InteractionResult.SUCCESS_SERVER;
                 }
                 player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
                         "[BCN] " + be.status()));

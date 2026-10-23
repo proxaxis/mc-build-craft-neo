@@ -38,7 +38,13 @@ Neo Builder MOD for Minecraft Fabric servers.
 
 - 陣営/職業: `/bcn fake spawn|set|give|use|status` で RCON から全検証可能 (FakePlayer ハーネス)
 - 資源: MD(ウォレット)/MP/EFP = attachment。EFP は ServerLevel attachment、閾値超過で襲撃イベント
-- 工業: `stirling_engine`/`quarry`/`macerator`/`item_pipe` ブロック。`/bcn machine info|insert|extract|mj`
+- 工業: `stirling_engine`/`quarry`/`macerator`/`item_pipe`/`teleport_pipe`/`request_pipe`/`nuclear_reactor`/`shop`/`dimensional_gate` ブロック。`/bcn machine info|insert|extract|mj`
+- teleport_pipe: 同一チャネル(0-7)間で無線輸送、次元横断可。右クリック=チャネル、スニーク+右クリック=mode(both/send/receive)。NBT `mode`/`channel` でも設定可。配送直後のコンテナは 200 tick pull 抑制(逆流防止)
+- request_pipe: 隣接コンテナ=出力先、パイプ網経由で要求アイテムを取寄せ。`/bcn machine request <pos> <item>`
+- shop: `/bcn shop offer|collect`、`/bcn fake buy`。右クリック購入、在庫=内部27スロット
+- dimensional_gate: 非衝突ポータル。進入エンティティを目標次元スポーンへ転移(右クリックで target 循環: twilight→skyreach→overworld)
+- 次元: `buildcraftneo:twilight`/`buildcraftneo:skyreach` (datapack)。`DimBuffs`: twilight mob HPx3/DMGx2、skyreach HPx2/DMGx3
+- 核反応炉: heat>=100 でメルトダウン(爆発+EFP+500)。水隣接で冷却
 - 武器/魔法: GunItem(矢弾), SpellItem, AbilityItem(職業ゲートMP消費)。26.3 は武器タグ判定 (SwordsItem無し、ItemTags.SWORDS 等)
 - 災害: `/bcn disaster trigger|threshold`
 - 一括採掘: スニーク+ツール破壊で発動、`/bcn vein <pos>` でテスト
