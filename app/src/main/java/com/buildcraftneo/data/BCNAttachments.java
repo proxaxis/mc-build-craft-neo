@@ -60,6 +60,20 @@ public final class BCNAttachments {
             .initializer(() -> 0L)
             .buildAndRegister(BCN.id("mj_generated"));
 
+    /** Active auction house offers. */
+    public static final AttachmentType<java.util.List<com.buildcraftneo.economy.AuctionHouse.Offer>> AUCTIONS =
+            AttachmentRegistry.<java.util.List<com.buildcraftneo.economy.AuctionHouse.Offer>>builder()
+            .persistent(Codec.list(com.buildcraftneo.economy.AuctionHouse.Offer.CODEC))
+            .initializer(java.util.List::of)
+            .buildAndRegister(BCN.id("auctions"));
+
+    /** Pending auction payouts: seller name -> MD owed. */
+    public static final AttachmentType<java.util.Map<String, Long>> AUCTION_EARNINGS =
+            AttachmentRegistry.<java.util.Map<String, Long>>builder()
+            .persistent(Codec.unboundedMap(Codec.STRING, Codec.LONG))
+            .initializer(java.util.Map::of)
+            .buildAndRegister(BCN.id("auction_earnings"));
+
     public static void register() {
         // static initializers above do the work
     }

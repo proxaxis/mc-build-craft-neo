@@ -35,6 +35,7 @@ public final class BCNBlocks {
     public static Block REQUEST_PIPE;
     public static Block SHOP;
     public static Block DIMENSION_GATE;
+    public static Block BOSS_ALTAR;
 
     public static void register() {
         STIRLING_ENGINE = machine("stirling_engine", StirlingEngineBlockEntity::new);
@@ -47,6 +48,7 @@ public final class BCNBlocks {
         SHOP = machine("shop", ShopBlockEntity::new);
         DIMENSION_GATE = machine("dimensional_gate", DimensionGateBlockEntity::new,
                 BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.METAL).noCollision());
+        BOSS_ALTAR = machine("boss_altar", BossAltarBlockEntity::new);
     }
 
     private static Block machine(String name, BlockEntityFactory factory) {
@@ -124,6 +126,12 @@ public final class BCNBlocks {
                     if (player.isShiftKeyDown()) tp.cycleMode(); else tp.cycleChannel();
                 } else if (be instanceof DimensionGateBlockEntity gate) {
                     gate.cycleTarget();
+                } else if (be instanceof BossAltarBlockEntity altar
+                        && level instanceof net.minecraft.server.level.ServerLevel sl) {
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                            altar.summonBoss(sl) ? "[BCN] Twilight Knight summoned!"
+                                                 : "[BCN] a boss is already nearby"));
+                    return InteractionResult.SUCCESS_SERVER;
                 } else if (be instanceof ShopBlockEntity shop && !player.isShiftKeyDown()
                         && player instanceof net.minecraft.server.level.ServerPlayer sp) {
                     player.sendSystemMessage(net.minecraft.network.chat.Component.literal(

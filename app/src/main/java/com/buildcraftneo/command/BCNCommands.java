@@ -112,6 +112,23 @@ public final class BCNCommands {
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
                                 .then(Commands.argument("player", StringArgumentType.word())
                                         .executes(BCNCommands::shopCollect)))))
+                .then(Commands.literal("auction")
+                        .then(Commands.literal("list").executes(BCNCommands::auctionList))
+                        .then(Commands.literal("sell").then(Commands.argument("player", StringArgumentType.word())
+                                .then(Commands.argument("price", LongArgumentType.longArg(1))
+                                        .executes(BCNCommands::auctionSell))))
+                        .then(Commands.literal("buy").then(Commands.argument("player", StringArgumentType.word())
+                                .then(Commands.argument("id", IntegerArgumentType.integer(1))
+                                        .executes(BCNCommands::auctionBuy))))
+                        .then(Commands.literal("collect").then(Commands.argument("player", StringArgumentType.word())
+                                .executes(BCNCommands::auctionCollect))))
+                .then(Commands.literal("dungeon")
+                        .then(Commands.literal("gen").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .executes(BCNCommands::dungeonGen)))
+                        .then(Commands.literal("summon").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .executes(BCNCommands::dungeonSummon))))
                 .then(Commands.literal("fake")
                         .then(Commands.literal("list").executes(BCNCommands::fakeList))
                         .then(Commands.literal("spawn").then(Commands.argument("name", StringArgumentType.word())
@@ -138,6 +155,16 @@ public final class BCNCommands {
                                 .then(Commands.argument("pos",
                                                 net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
                                         .executes(BCNCommands::fakeBuy))))
+                        .then(Commands.literal("menuopen").then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("pos",
+                                                net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                        .executes(BCNCommands::fakeMenuOpen))))
+                        .then(Commands.literal("menuclick").then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("slot", IntegerArgumentType.integer(0))
+                                        .then(Commands.argument("input", StringArgumentType.word())
+                                                .executes(BCNCommands::fakeMenuClick)))))
+                        .then(Commands.literal("menuclose").then(Commands.argument("name", StringArgumentType.word())
+                                .executes(BCNCommands::fakeMenuClose)))
                         .then(Commands.literal("jobeffects").then(Commands.argument("name", StringArgumentType.word())
                                 .executes(BCNCommands::fakeJobEffects)))));
     }
@@ -603,6 +630,168 @@ public final class BCNCommands {
                 + " | md=" + Profiles.md(p) + " | " + shop.status());
         return 1;
     }
+
+    // ---- auction ----
+
+    private static ServerPlayer resolvePlayer(CommandContext<CommandSourceStack> ctx, String name) {
+        ServerPlayer p = ctx.getSource().getServer().getPlayerList().getPlayerByName(name);
+        return p == null ? TestFakes.get(name) : p;
+    }
+
+    private static int auctionList(CommandContext<CommandSourceStack> ctx) {
+        var offers = com.buildcraftneo.economy.AuctionHouse.offers(
+                ctx.getSource().getServer().overworld());
+        if (offers.isEmpty()) {
+            tell(ctx, "auction: no offers");
+            return 1;
+        }
+        StringBuilder sb = new StringBuilder("auction offers:");
+        for (var o : offers) {
+            sb.append(" #").append(o.id()).append('=')
+                    .append(com.buildcraftneo.economy.AuctionHouse.describe(o));
+        }
+        tell(ctx, sb.toString());
+        return offers.size();
+    }
+
+    private static int auctionSell(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = resolvePlayer(ctx, StringArgumentType.getString(ctx, "player"));
+        if (p == null) {
+            ctx.getSource().sendFailure(Component.literal("no player/fake"));
+            return 0;
+        }
+        ItemStack hand = p.getMainHandItem();
+        if (hand.isEmpty()) {
+            ctx.getSource().sendFailure(Component.literal("player holds nothing"));
+            return 0;
+        }
+        long price = LongArgumentType.getLong(ctx, "price");
+        ItemStack stack = hand.copy();
+        hand.setCount(0);
+        int id = com.buildcraftneo.economy.AuctionHouse.sell(
+                ctx.getSource().getServer().overworld(), p, stack, price);
+        tell(ctx, "listed #" + id + " " + stack.getCount() + "x"
+                + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem())
+                + " @" + price + "MD");
+        return 1;
+    }
+
+    private static int auctionBuy(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = resolvePlayer(ctx, StringArgumentType.getString(ctx, "player"));
+        if (p == null) {
+            ctx.getSource().sendFailure(Component.literal("no player/fake"));
+            return 0;
+        }
+        String result = com.buildcraftneo.economy.AuctionHouse.buy(
+                ctx.getSource().getServer().overworld(), p,
+                IntegerArgumentType.getInteger(ctx, "id"));
+        tell(ctx, result + " | md=" + Profiles.md(p));
+        return 1;
+    }
+
+    private static int auctionCollect(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = resolvePlayer(ctx, StringArgumentType.getString(ctx, "player"));
+        if (p == null) {
+            ctx.getSource().sendFailure(Component.literal("no player/fake"));
+            return 0;
+        }
+        long paid = com.buildcraftneo.economy.AuctionHouse.collect(
+                ctx.getSource().getServer().overworld(), p);
+        tell(ctx, "collected " + paid + " MD -> md=" + Profiles.md(p));
+        return 1;
+    }
+
+    // ---- dungeon ----
+
+    private static int dungeonGen(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        com.buildcraftneo.dim.Dungeon.gen(ctx.getSource().getLevel(), pos);
+        tell(ctx, "dungeon generated at " + pos.toShortString());
+        return 1;
+    }
+
+    private static int dungeonSummon(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.BossAltarBlockEntity altar)) {
+            ctx.getSource().sendFailure(Component.literal("no boss altar at " + pos.toShortString()));
+            return 0;
+        }
+        boolean ok = altar.summonBoss(ctx.getSource().getLevel());
+        tell(ctx, ok ? "Twilight Knight summoned" : "a boss is already nearby");
+        return ok ? 1 : 0;
+    }
+
+    // ---- fake menu harness ----
+
+    private static int fakeMenuOpen(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.ShopBlockEntity shop)) {
+            ctx.getSource().sendFailure(Component.literal("no shop at " + pos.toShortString()));
+            return 0;
+        }
+        // FakePlayer.openMenu is a stub (returns empty) — instantiate the menu
+        // directly and drive it via clicked(), which exercises the same logic.
+        var menu = new com.buildcraftneo.industry.ShopMenu(1, p.getInventory(), shop,
+                net.minecraft.world.inventory.ContainerLevelAccess.create(
+                        shop.getLevel(), shop.getBlockPos()));
+        OPEN_MENUS.put(p.getName().getString(), menu);
+        tell(ctx, "menu=" + menu.getClass().getSimpleName()
+                + " slots=" + menu.slots.size()
+                + " slot0=" + (menu.slots.get(0).hasItem()
+                        ? menu.slots.get(0).getItem().getCount() + "x"
+                            + net.minecraft.core.registries.BuiltInRegistries.ITEM
+                                .getKey(menu.slots.get(0).getItem().getItem()) : "empty"));
+        return 1;
+    }
+
+    private static int fakeMenuClick(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        int slotIdx = IntegerArgumentType.getInteger(ctx, "slot");
+        String input = StringArgumentType.getString(ctx, "input");
+        var type = switch (input) {
+            case "quickmove", "shift" -> net.minecraft.world.inventory.ContainerInput.QUICK_MOVE;
+            default -> net.minecraft.world.inventory.ContainerInput.PICKUP;
+        };
+        var menu = OPEN_MENUS.get(p.getName().getString());
+        if (menu == null) {
+            ctx.getSource().sendFailure(Component.literal("no open menu (use /bcn fake menuopen)"));
+            return 0;
+        }
+        if (!menu.isValidSlotIndex(slotIdx)) {
+            ctx.getSource().sendFailure(Component.literal("bad slot " + slotIdx));
+            return 0;
+        }
+        menu.clicked(slotIdx, 0, type, p);
+        tell(ctx, "clicked slot=" + slotIdx + " input=" + type
+                + " now=" + (menu.slots.get(slotIdx).hasItem()
+                        ? menu.slots.get(slotIdx).getItem().getCount() + "x"
+                            + net.minecraft.core.registries.BuiltInRegistries.ITEM
+                                .getKey(menu.slots.get(slotIdx).getItem().getItem()) : "empty")
+                + " carried=" + (menu.getCarried().isEmpty() ? "-"
+                        : menu.getCarried().getCount() + "x"));
+        return 1;
+    }
+
+    private static int fakeMenuClose(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        var menu = OPEN_MENUS.remove(p.getName().getString());
+        if (menu == null) {
+            tell(ctx, "no open menu");
+            return 1;
+        }
+        menu.removed(p); // returns carried stack to inventory
+        tell(ctx, "menu closed; carried=" + menu.getCarried().isEmpty());
+        return 1;
+    }
+
+    private static final java.util.Map<String, com.buildcraftneo.industry.ShopMenu> OPEN_MENUS =
+            new java.util.concurrent.ConcurrentHashMap<>();
 
     private static ServerPlayer player(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         return EntityArgument.getPlayer(ctx, "player");

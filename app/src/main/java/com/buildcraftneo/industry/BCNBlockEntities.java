@@ -18,6 +18,7 @@ public final class BCNBlockEntities {
     public static BlockEntityType<RequestPipeBlockEntity> REQUEST_PIPE;
     public static BlockEntityType<ShopBlockEntity> SHOP;
     public static BlockEntityType<DimensionGateBlockEntity> DIMENSION_GATE;
+    public static BlockEntityType<BossAltarBlockEntity> BOSS_ALTAR;
 
     public static void register() {
         STIRLING_ENGINE = type("stirling_engine", StirlingEngineBlockEntity::new, BCNBlocks.STIRLING_ENGINE);
@@ -29,6 +30,7 @@ public final class BCNBlockEntities {
         REQUEST_PIPE = type("request_pipe", RequestPipeBlockEntity::new, BCNBlocks.REQUEST_PIPE);
         SHOP = type("shop", ShopBlockEntity::new, BCNBlocks.SHOP);
         DIMENSION_GATE = type("dimensional_gate", DimensionGateBlockEntity::new, BCNBlocks.DIMENSION_GATE);
+        BOSS_ALTAR = type("boss_altar", BossAltarBlockEntity::new, BCNBlocks.BOSS_ALTAR);
     }
 
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> type(
