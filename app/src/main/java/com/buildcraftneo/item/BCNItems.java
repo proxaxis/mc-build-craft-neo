@@ -23,6 +23,11 @@ public final class BCNItems {
     public static Item WRENCH;
     public static Item CIRCUIT;
 
+    // macerator outputs (smelt -> ingot)
+    public static Item IRON_DUST;
+    public static Item GOLD_DUST;
+    public static Item COPPER_DUST;
+
     // magic tokens (placeholder wand for restriction testing)
     public static Item APPRENTICE_WAND;
 
@@ -38,6 +43,9 @@ public final class BCNItems {
         NETHERITE_COIN = simple("netherite_coin");
         WRENCH = simple("wrench");
         CIRCUIT = simple("circuit");
+        IRON_DUST = simple("iron_dust");
+        GOLD_DUST = simple("gold_dust");
+        COPPER_DUST = simple("copper_dust");
         APPRENTICE_WAND = spell("apprentice_wand", new Item.Properties());
         SERVICE_PISTOL = gun("service_pistol");
     }

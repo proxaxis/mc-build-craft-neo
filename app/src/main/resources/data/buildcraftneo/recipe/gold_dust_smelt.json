@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": "buildcraftneo:gold_dust",
+  "result": {
+    "id": "minecraft:gold_ingot",
+    "count": 1
+  },
+  "experience": 1.0,
+  "cookingtime": 160
+}

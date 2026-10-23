@@ -68,6 +68,21 @@ public final class BCNCommands {
                                 .executes(BCNCommands::efpAdd))))
                 .then(Commands.literal("check").then(Commands.argument("player", EntityArgument.player())
                         .executes(BCNCommands::check)))
+                .then(Commands.literal("machine")
+                        .then(Commands.literal("info").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .executes(BCNCommands::machineInfo)))
+                        .then(Commands.literal("insert").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .then(Commands.argument("item", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
+                                        .executes(BCNCommands::machineInsert))))
+                        .then(Commands.literal("extract").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .executes(BCNCommands::machineExtract)))
+                        .then(Commands.literal("mj").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .then(Commands.argument("amount", LongArgumentType.longArg())
+                                        .executes(BCNCommands::machineMj)))))
                 .then(Commands.literal("fake")
                         .then(Commands.literal("list").executes(BCNCommands::fakeList))
                         .then(Commands.literal("spawn").then(Commands.argument("name", StringArgumentType.word())
@@ -222,6 +237,85 @@ public final class BCNCommands {
         tell(ctx, String.format("%s: faction=%s job=%s md=%d mp=%d/%d",
                 p.getName().getString(), Profiles.faction(p).id(), Profiles.job(p).id(),
                 Profiles.md(p), Profiles.mp(p), Profiles.mpMax(p)));
+        return 1;
+    }
+
+    // ---- machine test helpers ----
+
+    private static int machineInfo(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (be instanceof com.buildcraftneo.industry.MachineBlockEntity m) {
+            tell(ctx, m.status());
+            return 1;
+        }
+        ctx.getSource().sendFailure(Component.literal("no machine at " + pos.toShortString()
+                + " (be=" + be + ")"));
+        return 0;
+    }
+
+    private static int machineInsert(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.MachineBlockEntity m)) {
+            ctx.getSource().sendFailure(Component.literal("no machine at " + pos.toShortString()));
+            return 0;
+        }
+        ItemStack stack = net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "item")
+                .createItemStack(8);
+        for (int i = 0; i < m.getContainerSize() && !stack.isEmpty(); i++) {
+            ItemStack cur = m.getItem(i);
+            if (cur.isEmpty()) {
+                m.setItem(i, stack.copy());
+                return okMachine(ctx, m);
+            }
+            if (ItemStack.isSameItemSameComponents(cur, stack)) {
+                int move = Math.min(cur.getMaxStackSize() - cur.getCount(), stack.getCount());
+                cur.grow(move);
+                stack.shrink(move);
+                m.setChanged();
+            }
+        }
+        tell(ctx, "inserted -> " + m.status());
+        return 1;
+    }
+
+    private static int okMachine(CommandContext<CommandSourceStack> ctx,
+            com.buildcraftneo.industry.MachineBlockEntity m) {
+        tell(ctx, "inserted -> " + m.status());
+        return 1;
+    }
+
+    private static int machineExtract(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.MachineBlockEntity m)) {
+            ctx.getSource().sendFailure(Component.literal("no machine at " + pos.toShortString()));
+            return 0;
+        }
+        StringBuilder sb = new StringBuilder("extracted: ");
+        for (int i = 0; i < m.getContainerSize(); i++) {
+            ItemStack s = m.removeItemNoUpdate(i);
+            if (!s.isEmpty()) {
+                net.minecraft.world.level.block.Block.popResource(ctx.getSource().getLevel(), pos.above(), s);
+                sb.append(s.getCount()).append("x")
+                        .append(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(s.getItem()))
+                        .append(" ");
+            }
+        }
+        tell(ctx, sb.toString());
+        return 1;
+    }
+
+    private static int machineMj(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.MachineBlockEntity m)) {
+            ctx.getSource().sendFailure(Component.literal("no machine at " + pos.toShortString()));
+            return 0;
+        }
+        long leftover = m.accept(LongArgumentType.getLong(ctx, "amount"));
+        tell(ctx, m.status() + " leftover=" + leftover);
         return 1;
     }
 
