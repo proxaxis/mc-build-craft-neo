@@ -96,6 +96,60 @@ public final class Abilities {
         level.addFreshEntity(arrow);
     }
 
+    // ---- Iron's Spells-style spells ----
+
+    public static void heal(ServerPlayer p, ServerLevel level) {
+        p.heal(12.0f);
+        p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 1, true, true));
+    }
+
+    public static void lightning(ServerPlayer p, ServerLevel level) {
+        Vec3 at = p.pick(20.0, 0.0f, false).getLocation();
+        var bolt = new net.minecraft.world.entity.LightningBolt(
+                net.minecraft.world.entity.EntityTypes.LIGHTNING_BOLT, level);
+        bolt.setPos(at.x, at.y, at.z);
+        level.addFreshEntity(bolt);
+    }
+
+    public static void blink(ServerPlayer p, ServerLevel level) {
+        var hit = p.pick(16.0, 0.0f, false);
+        Vec3 target;
+        if (hit instanceof net.minecraft.world.phys.BlockHitResult bhr) {
+            target = Vec3.atCenterOf(bhr.getBlockPos()).subtract(
+                    p.getLookAngle().multiply(1.2, 0, 1.2)).add(0, 0.5, 0);
+        } else {
+            target = hit.getLocation();
+        }
+        p.teleportTo(target.x, target.y, target.z);
+    }
+
+    public static void holySmite(ServerPlayer p, ServerLevel level) {
+        for (Entity e : monsters(level, p, 8)) {
+            if (e instanceof Mob m) {
+                m.hurtServer(level, level.damageSources().magic(), 14.0f);
+                m.addEffect(new MobEffectInstance(MobEffects.GLOWING, 100, 0, true, true));
+            }
+        }
+        for (ServerPlayer ally : level.players()) {
+            if (ally.distanceTo(p) <= 8.0) ally.heal(4.0f);
+        }
+    }
+
+    public static void smokeBomb(ServerPlayer p, ServerLevel level) {
+        p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 160, 0, true, true));
+        p.addEffect(new MobEffectInstance(MobEffects.SPEED, 160, 1, true, true));
+        for (Entity e : monsters(level, p, 8)) {
+            if (e instanceof Mob m) {
+                m.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 0, true, true));
+            }
+        }
+    }
+
+    public static void fortify(ServerPlayer p, ServerLevel level) {
+        p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 600, 3, true, true));
+        p.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 200, 1, true, true));
+    }
+
     private static java.util.List<Entity> monsters(ServerLevel level, ServerPlayer p, double range) {
         return level.getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(Entity.class),
                 AABB.ofSize(p.position(), range * 2, range * 2, range * 2),

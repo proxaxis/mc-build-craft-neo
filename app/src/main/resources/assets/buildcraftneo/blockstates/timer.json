@@ -1,0 +1,4 @@
+{ "variants": {
+  "powered=false": { "model": "buildcraftneo:block/timer" },
+  "powered=true": { "model": "buildcraftneo:block/timer" }
+} }

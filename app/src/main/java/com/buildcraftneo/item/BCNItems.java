@@ -42,6 +42,14 @@ public final class BCNItems {
     public static Item KATANA;
     public static Item GREATSWORD;
     public static Item SPEAR;
+    public static Item GLAIVE;
+    public static Item RAPIER;
+    public static Item CLAYMORE;
+    public static Item WAR_DAGGER;
+    public static Item SCYTHE;
+
+    // dimension resources (Aether analogue)
+    public static Item AMBROSIUM_SHARD;
 
     // tiered shields (Shield Expansion analogue)
     public static Item SHIELD_WOODEN;
@@ -59,6 +67,14 @@ public final class BCNItems {
     public static Item ABILITY_FROST_NOVA;
     public static Item ABILITY_RAIN_OF_ARROWS;
     public static Item ABILITY_PIERCE_SHOT;
+
+    // spell items (Iron's Spells analogue)
+    public static Item ABILITY_HEAL;
+    public static Item ABILITY_LIGHTNING;
+    public static Item ABILITY_BLINK;
+    public static Item ABILITY_HOLY_SMITE;
+    public static Item ABILITY_SMOKE_BOMB;
+    public static Item ABILITY_FORTIFY;
 
     /** MD value of each coin tier. */
     public static final java.util.Map<Item, Long> COIN_VALUES = new java.util.LinkedHashMap<>();
@@ -84,6 +100,12 @@ public final class BCNItems {
         KATANA = melee("katana", 9.0, -2.0);
         GREATSWORD = melee("greatsword", 14.0, -3.2);
         SPEAR = melee("spear", 7.0, -2.6);
+        GLAIVE = melee("glaive", 11.0, -2.8);
+        RAPIER = melee("rapier", 5.0, -1.4);
+        CLAYMORE = melee("claymore", 12.0, -3.0);
+        WAR_DAGGER = melee("war_dagger", 4.0, -1.0);
+        SCYTHE = melee("scythe", 10.0, -2.4);
+        AMBROSIUM_SHARD = ambrosiumShard("ambrosium_shard");
         SHIELD_WOODEN = shield("shield_wooden", 120);
         SHIELD_IRON = shield("shield_iron", 300);
         SHIELD_GOLDEN = shield("shield_golden", 200);
@@ -97,6 +119,12 @@ public final class BCNItems {
         ABILITY_FROST_NOVA = ability("ability_frost_nova", com.buildcraftneo.data.Job.MAGE, 30, 300, Abilities::frostNova);
         ABILITY_RAIN_OF_ARROWS = ability("ability_rain_of_arrows", com.buildcraftneo.data.Job.ARCHER, 30, 300, Abilities::rainOfArrows);
         ABILITY_PIERCE_SHOT = ability("ability_pierce_shot", com.buildcraftneo.data.Job.ARCHER, 15, 100, Abilities::pierceShot);
+        ABILITY_HEAL = ability("ability_heal", com.buildcraftneo.data.Job.HEALER, 20, 160, Abilities::heal);
+        ABILITY_LIGHTNING = ability("ability_lightning", com.buildcraftneo.data.Job.MAGE, 30, 200, Abilities::lightning);
+        ABILITY_BLINK = ability("ability_blink", com.buildcraftneo.data.Job.ASSASSIN, 10, 80, Abilities::blink);
+        ABILITY_HOLY_SMITE = ability("ability_holy_smite", com.buildcraftneo.data.Job.GUARDIAN, 30, 240, Abilities::holySmite);
+        ABILITY_SMOKE_BOMB = ability("ability_smoke_bomb", com.buildcraftneo.data.Job.ASSASSIN, 15, 200, Abilities::smokeBomb);
+        ABILITY_FORTIFY = ability("ability_fortify", com.buildcraftneo.data.Job.GUARDIAN, 25, 300, Abilities::fortify);
 
         COIN_VALUES.put(COPPER_COIN, 1L);
         COIN_VALUES.put(IRON_COIN, 10L);
@@ -142,6 +170,13 @@ public final class BCNItems {
                 .build();
         return Registry.register(BuiltInRegistries.ITEM, id,
                 new Item(new Item.Properties().setId(key).attributes(mods).stacksTo(1)));
+    }
+
+    private static Item ambrosiumShard(String name) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new AmbrosiumShardItem(new Item.Properties().setId(key)));
     }
 
     private static Item shield(String name, int durability) {

@@ -1,0 +1,1 @@
+{ "parent": "minecraft:block/cube_column", "textures": { "end": "buildcraftneo:block/timer_top", "side": "buildcraftneo:block/gate_base" } }

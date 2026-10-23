@@ -27,12 +27,24 @@ public class BossAltarBlockEntity extends MachineBlockEntity {
             lastBoss = "alive-nearby";
             return false;
         }
-        Zombie boss = new Zombie(EntityTypes.ZOMBIE, level);
+        boolean skyreach = level.dimension().identifier().getPath().equals("skyreach")
+                && level.dimension().identifier().getNamespace().equals("buildcraftneo");
+        net.minecraft.world.entity.Mob boss = skyreach
+                ? skyreachGuardian(level) : twilightKnight(level);
         boss.setPos(getBlockPos().getX() + 0.5, getBlockPos().getY() + 1.0,
                 getBlockPos().getZ() + 0.5);
-        boss.setCustomName(net.minecraft.network.chat.Component.literal("Twilight Knight"));
         boss.setPersistenceRequired();
         boss.addTag("bcn_boss");
+        level.addFreshEntity(boss);
+        BossManager.track(boss, level.getServer());
+        lastBoss = boss.getUUID().toString().substring(0, 8);
+        setChanged();
+        return true;
+    }
+
+    private static Zombie twilightKnight(ServerLevel level) {
+        Zombie boss = new Zombie(EntityTypes.ZOMBIE, level);
+        boss.setCustomName(net.minecraft.network.chat.Component.literal("Twilight Knight"));
         var hp = boss.getAttribute(Attributes.MAX_HEALTH);
         if (hp != null) {
             hp.setBaseValue(200.0);
@@ -46,11 +58,21 @@ public class BossAltarBlockEntity extends MachineBlockEntity {
         boss.setDropChance(EquipmentSlot.MAINHAND, 0.0f);
         boss.setDropChance(EquipmentSlot.HEAD, 0.0f);
         boss.setDropChance(EquipmentSlot.CHEST, 0.0f);
-        level.addFreshEntity(boss);
-        BossManager.track(boss, level.getServer());
-        lastBoss = boss.getUUID().toString().substring(0, 8);
-        setChanged();
-        return true;
+        return boss;
+    }
+
+    private static net.minecraft.world.entity.monster.Ravager skyreachGuardian(ServerLevel level) {
+        var boss = new net.minecraft.world.entity.monster.Ravager(
+                net.minecraft.world.entity.EntityTypes.RAVAGER, level);
+        boss.setCustomName(net.minecraft.network.chat.Component.literal("Skyreach Guardian"));
+        var hp = boss.getAttribute(Attributes.MAX_HEALTH);
+        if (hp != null) {
+            hp.setBaseValue(300.0);
+            boss.setHealth(300.0f);
+        }
+        var atk = boss.getAttribute(Attributes.ATTACK_DAMAGE);
+        if (atk != null) atk.setBaseValue(14.0);
+        return boss;
     }
 
     @Override

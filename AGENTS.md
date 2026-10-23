@@ -38,8 +38,12 @@ Neo Builder MOD for Minecraft Fabric servers.
 
 - **Better Combat / Wall-Jump / Shield Expansion のパリィ演出**: クライアント移動・アニメーション制御が本質。実装は可能だが実クライアントなしに「動作確認済」と言えないため未着手
 - **車両 (HMG)**: 実装は可能だが運転検証に実クライアント操作必須
-- **原作パイプの接続変形**: 周囲接続で形状変化する細パイプは TESR/動的モデル必須。静的 cube モデルでは再現不可（テクスチャは適用済だが形状が違う）
+- **原作パイプ描画の厳密な再現**: BuildCraft 原作は UV マッピングが特殊（テクスチャは帯状で大半が透明）。本実装は動的ベイクドモデル（`FabricBlockStateModel.emitQuads` + `ModelLoadingPlugin.modifyBlockModelAfterBake`）で細パイプ+接続アームを実現済みだが、見た目の細部は原作と異なる。テクスチャは源流の不透明色でベース化した変換版を使用
 - **Iron's Spells の詠唱モーション/スキルツリー GUI**: クライアント専用 UI/アニメで RCON 検証不可
+
+## ルール
+
+- **クライアント描画の検証は必ず仮想デスクトップ (Xvfb) を使う**。app コンテナに xvfb+mesa(llvmpipe)+xdotool 導入済み。`DISPLAY=:99 ./gradlew runClient` で DevClient が `testserver:25565` へ自動接続するので、`import -window root /tmp/shot.png` でスクリーンショットを取得して目視確認する。「実装した」だけで「検証した」とは言わない
 
 ## 実装済みシステム (buildcraftneo MOD)
 
@@ -56,6 +60,12 @@ Neo Builder MOD for Minecraft Fabric servers.
 - 次元: `buildcraftneo:twilight`/`buildcraftneo:skyreach` (datapack)。`DimBuffs`: twilight mob HPx3/DMGx2、skyreach HPx2/DMGx3
 - 核反応炉: heat>=100 でメルトダウン(爆発+EFP+500)。水隣接で冷却
 - 武器/魔法: GunItem(矢弾), SpellItem, AbilityItem(職業ゲートMP消費)。26.3 は武器タグ判定 (SwordsItem無し、ItemTags.SWORDS 等)
+- スペル拡張 (Iron's Spells系): heal/lightning/blink/holy_smite/smoke_bomb/fortify。MP消費・職業ゲート済み、spell_icons テクスチャ使用
+- ProjectRed系回路: `timer` (40tick周期4tickパルス、poweredブロック状態+getSignal)、`logic_gate` (facing=出力、右クリックで not/or/and/xor 切替、NBT `mode`、入力=背面or左右)。`execute if block` で検証済み
+- 次元ボス拡張: boss_altar は次元判定 — skyreach では Skyreach Guardian (Ravager HP300×DimBuffs=600)、その他 Twilight Knight
+- Aether系: `ambrosium_ore` (loot_table で ambrosium_shard 1-3個ドロップ)、`ambrosium_shard` (使用で4HP回復)
+- 追加武器 (Simply Swords系): glaive/rapier/claymore/war_dagger/scythe (irons_spellbooks テクスチャ)
+- 動的パイプ描画: `PipeBlockStateModel` (クライアント) が emitQuads で隣接パイプ/コンテナを検出し細パイプ+アームを動的生成。Xvfb実機確認済
 - 災害: `/bcn disaster trigger|threshold`
 - 一括採掘: スニーク+ツール破壊で発動、`/bcn vein <pos>` でテスト
 - 経済: 6種コイン、fake deposit/withdraw

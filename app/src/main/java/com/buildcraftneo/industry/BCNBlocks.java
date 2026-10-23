@@ -36,6 +36,9 @@ public final class BCNBlocks {
     public static Block SHOP;
     public static Block DIMENSION_GATE;
     public static Block BOSS_ALTAR;
+    public static Block TIMER;
+    public static Block LOGIC_GATE;
+    public static Block AMBROSIUM_ORE;
 
     public static void register() {
         STIRLING_ENGINE = machine("stirling_engine", StirlingEngineBlockEntity::new);
@@ -49,6 +52,26 @@ public final class BCNBlocks {
         DIMENSION_GATE = machine("dimensional_gate", DimensionGateBlockEntity::new,
                 BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.METAL).noCollision());
         BOSS_ALTAR = machine("boss_altar", BossAltarBlockEntity::new);
+        TIMER = block("timer", TimerBlock::new,
+                BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE));
+        LOGIC_GATE = block("logic_gate", LogicGateBlock::new,
+                BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE));
+        AMBROSIUM_ORE = block("ambrosium_ore", Block::new,
+                BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.STONE)
+                        .requiresCorrectToolForDrops());
+    }
+
+    private static Block block(String name,
+            java.util.function.Function<BlockBehaviour.Properties, Block> factory,
+            BlockBehaviour.Properties props) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, id);
+        Block block = factory.apply(props.setId(key));
+        Registry.register(BuiltInRegistries.BLOCK, id, block);
+        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, id);
+        Registry.register(BuiltInRegistries.ITEM, id,
+                new BlockItem(block, new Item.Properties().setId(itemKey)));
+        return block;
     }
 
     private static Block machine(String name, BlockEntityFactory factory) {

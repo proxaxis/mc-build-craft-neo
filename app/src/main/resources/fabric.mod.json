@@ -28,6 +28,10 @@
     "fabric-networking-api-v1": "*",
     "fabric-object-builder-api-v1": "*",
     "fabric-registry-sync-v0": "*",
-    "fabric-game-rule-api-v1": "*"
+    "fabric-game-rule-api-v1": "*",
+    "fabric-menu-api-v1": "*",
+    "fabric-model-loading-api-v1": "*",
+    "fabric-renderer-api-v1": "*",
+    "fabric-block-getter-api-v2": "*"
   }
 }
