@@ -34,6 +34,13 @@ Neo Builder MOD for Minecraft Fabric servers.
 - RCON コマンドは直列化して送信し、切断時は自動で再接続・1 回リトライする
 - 手動確認: `devin mcp list` / `devin mcp get testserver`
 
+## 未実施（理由つき・検証不可 or 規模外）
+
+- **Better Combat / Wall-Jump / Shield Expansion のパリィ演出**: クライアント移動・アニメーション制御が本質。実装は可能だが実クライアントなしに「動作確認済」と言えないため未着手
+- **車両 (HMG)**: 実装は可能だが運転検証に実クライアント操作必須
+- **原作パイプの接続変形**: 周囲接続で形状変化する細パイプは TESR/動的モデル必須。静的 cube モデルでは再現不可（テクスチャは適用済だが形状が違う）
+- **Iron's Spells の詠唱モーション/スキルツリー GUI**: クライアント専用 UI/アニメで RCON 検証不可
+
 ## 実装済みシステム (buildcraftneo MOD)
 
 - 陣営/職業: `/bcn fake spawn|set|give|use|status` で RCON から全検証可能 (FakePlayer ハーネス)

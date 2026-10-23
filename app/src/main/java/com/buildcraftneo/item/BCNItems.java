@@ -34,6 +34,21 @@ public final class BCNItems {
 
     // science weapons
     public static Item SERVICE_PISTOL;
+    public static Item ASSAULT_RIFLE;
+    public static Item SNIPER_RIFLE;
+    public static Item LMG;
+
+    // melee weapons (Simply Swords analogue)
+    public static Item KATANA;
+    public static Item GREATSWORD;
+    public static Item SPEAR;
+
+    // tiered shields (Shield Expansion analogue)
+    public static Item SHIELD_WOODEN;
+    public static Item SHIELD_IRON;
+    public static Item SHIELD_GOLDEN;
+    public static Item SHIELD_DIAMOND;
+    public static Item SHIELD_NETHERITE;
 
     // job ability items
     public static Item ABILITY_WARCRY;
@@ -63,6 +78,17 @@ public final class BCNItems {
         COPPER_DUST = simple("copper_dust");
         APPRENTICE_WAND = spell("apprentice_wand", new Item.Properties());
         SERVICE_PISTOL = gun("service_pistol", 8.0, 8);
+        ASSAULT_RIFLE = gun("assault_rifle", 10.0, 5);
+        SNIPER_RIFLE = gun("sniper_rifle", 24.0, 40);
+        LMG = gun("lmg", 6.0, 3);
+        KATANA = melee("katana", 9.0, -2.0);
+        GREATSWORD = melee("greatsword", 14.0, -3.2);
+        SPEAR = melee("spear", 7.0, -2.6);
+        SHIELD_WOODEN = shield("shield_wooden", 120);
+        SHIELD_IRON = shield("shield_iron", 300);
+        SHIELD_GOLDEN = shield("shield_golden", 200);
+        SHIELD_DIAMOND = shield("shield_diamond", 500);
+        SHIELD_NETHERITE = shield("shield_netherite", 800);
         ABILITY_WARCRY = ability("ability_warcry", com.buildcraftneo.data.Job.WARRIOR, 20, 200, Abilities::warcry);
         ABILITY_TAUNT = ability("ability_taunt", com.buildcraftneo.data.Job.GUARDIAN, 15, 200, Abilities::taunt);
         ABILITY_SHADOWSTEP = ability("ability_shadowstep", com.buildcraftneo.data.Job.ASSASSIN, 15, 100, Abilities::shadowstep);
@@ -97,6 +123,33 @@ public final class BCNItems {
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
         return Registry.register(BuiltInRegistries.ITEM, id,
                 new GunItem(new Item.Properties().setId(key), damage, cooldownTicks));
+    }
+
+    private static Item melee(String name, double damage, double speed) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        var mods = net.minecraft.world.item.component.ItemAttributeModifiers.builder()
+                .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE,
+                        new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                                net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_ID, damage - 1.0,
+                                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
+                        net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
+                .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_SPEED,
+                        new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                                net.minecraft.world.item.Item.BASE_ATTACK_SPEED_ID, speed,
+                                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
+                        net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
+                .build();
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new Item(new Item.Properties().setId(key).attributes(mods).stacksTo(1)));
+    }
+
+    private static Item shield(String name, int durability) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new net.minecraft.world.item.ShieldItem(
+                        new Item.Properties().setId(key).durability(durability)));
     }
 
     private static Item ability(String name, com.buildcraftneo.data.Job job, int mpCost,
