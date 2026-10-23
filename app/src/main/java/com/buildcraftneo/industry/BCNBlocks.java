@@ -100,7 +100,9 @@ public final class BCNBlocks {
         protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                 Player player, BlockHitResult hit) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MachineBlockEntity be) {
-                if (be instanceof TeleportPipeBlockEntity tp) tp.cycleChannel();
+                if (be instanceof TeleportPipeBlockEntity tp) {
+                    if (player.isShiftKeyDown()) tp.cycleMode(); else tp.cycleChannel();
+                }
                 player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
                         "[BCN] " + be.status()));
             }

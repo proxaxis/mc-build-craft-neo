@@ -82,8 +82,11 @@ public class ItemPipeBlockEntity extends MachineBlockEntity {
                 BlockPos next = cur.relative(dir);
                 if (!seen.add(next)) continue;
                 BlockEntity be = level.getBlockEntity(next);
-                if (be instanceof ItemPipeBlockEntity) {
+                if (be instanceof ItemPipeBlockEntity || be instanceof RequestPipeBlockEntity) {
                     queue.add(next);
+                } else if (be instanceof TeleportPipeBlockEntity tp) {
+                    stack = tp.inject(stack);
+                    if (stack.isEmpty()) return ItemStack.EMPTY;
                 } else if (be instanceof Container container && !next.equals(exclude)) {
                     stack = insert(container, stack);
                     if (stack.isEmpty()) return ItemStack.EMPTY;

@@ -72,7 +72,8 @@ public class RequestPipeBlockEntity extends MachineBlockEntity {
                 if (be instanceof ItemPipeBlockEntity || be instanceof RequestPipeBlockEntity
                         || be instanceof TeleportPipeBlockEntity) {
                     queue.add(next);
-                } else if (be instanceof Container container && !next.equals(start)) {
+                } else if (be instanceof Container container && !cur.equals(start)) {
+                    // containers directly adjacent to the request pipe are outputs, never sources
                     ItemStack found = extractItem(container, requested);
                     if (!found.isEmpty()) return found;
                 }
