@@ -33,6 +33,16 @@ dependencies {
     implementation "net.fabricmc.fabric-api:fabric-registry-sync-v0:8.0.4+1ca9f6365d"
 }
 
+loom {
+    runs {
+        client {
+            // Auto-join the Fabric testserver on launch (dev/Xvfb verification).
+            programArgs "--quickPlayMultiplayer", "testserver:25565",
+                    "--username", "DevClient", "--width", "854", "--height", "480"
+        }
+    }
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)

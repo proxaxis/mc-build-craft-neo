@@ -111,7 +111,11 @@ public final class BCNCommands {
                         .then(Commands.literal("collect").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
                                 .then(Commands.argument("player", StringArgumentType.word())
-                                        .executes(BCNCommands::shopCollect)))))
+                                        .executes(BCNCommands::shopCollect))))
+                        .then(Commands.literal("menu").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .then(Commands.argument("player", StringArgumentType.word())
+                                        .executes(BCNCommands::shopMenu)))))
                 .then(Commands.literal("auction")
                         .then(Commands.literal("list").executes(BCNCommands::auctionList))
                         .then(Commands.literal("sell").then(Commands.argument("player", StringArgumentType.word())
@@ -615,6 +619,27 @@ public final class BCNCommands {
         tell(ctx, "collected " + paid + " MD -> " + p.getName().getString()
                 + " md=" + Profiles.md(p));
         return 1;
+    }
+
+    private static int shopMenu(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.ShopBlockEntity shop)) {
+            ctx.getSource().sendFailure(Component.literal("no shop at " + pos.toShortString()));
+            return 0;
+        }
+        ServerPlayer p = resolvePlayer(ctx, StringArgumentType.getString(ctx, "player"));
+        if (p == null) {
+            ctx.getSource().sendFailure(Component.literal("no player/fake"));
+            return 0;
+        }
+        var result = p.openMenu(new net.minecraft.world.SimpleMenuProvider(
+                (id, inv, pl) -> new com.buildcraftneo.industry.ShopMenu(id, inv, shop,
+                        net.minecraft.world.inventory.ContainerLevelAccess.create(
+                                shop.getLevel(), shop.getBlockPos())),
+                Component.literal("Shop")));
+        tell(ctx, "openMenu -> " + (result.isPresent() ? "containerId=" + result.getAsInt() : "refused"));
+        return result.isPresent() ? 1 : 0;
     }
 
     private static int fakeBuy(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

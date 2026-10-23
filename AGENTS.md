@@ -42,7 +42,7 @@ Neo Builder MOD for Minecraft Fabric servers.
 - teleport_pipe: 同一チャネル(0-7)間で無線輸送、次元横断可。右クリック=チャネル、スニーク+右クリック=mode(both/send/receive)。NBT `mode`/`channel` でも設定可。配送直後のコンテナは 200 tick pull 抑制(逆流防止)
 - request_pipe: 隣接コンテナ=出力先、パイプ網経由で要求アイテムを取寄せ。`/bcn machine request <pos> <item>`
 - shop: `/bcn shop offer|collect`、`/bcn fake buy`。右クリック購入、在庫=内部27スロット
-- GUI(Menu): `ShopMenu`(27スロット+プレイヤーinv)。`FakePlayer.openMenu` は stub のため直接インスタンス化して `/bcn fake menuopen|menuclick|menuclose` でサーバ側検証。クライアント Screen 未実装(実機クライアントでの開放は要 Screen 登録)
+- GUI(Menu): `ShopMenu`(27スロット+プレイヤーinv) + クライアント Screen (`ShopScreen`, `client` entrypoint)。`/bcn fake menuopen|menuclick|menuclose` でサーバ側、`/bcn shop menu <pos> <player>` で実クライアント検証。**Xvfb実機検証済**: app コンテナに xvfb+mesa(llvmpipe)+xdotool 導入、`DISPLAY=:99 ./gradlew runClient` で DevClient 自動接続(`--quickPlayMultiplayer testserver:25565`)、`import -window root` でスクリーンショット取得。注意: Menu の stillValid は8ブロック距離制限があるため openMenu 対象プレイヤーは近くに tp 必須
 - オークション: `/bcn auction list|sell|buy|collect`。出品=手持ちスタック、MD 決済、出品者不在時は pending→collect。overworld attachment 永続化
 - ダンジョン/ボス: `/bcn dungeon gen <pos>`(9x5x5 石レンガ部屋+祭壇+宝箱)、`boss_altar` 起動で Twilight Knight(HP200)召喚。ボスバー連動・討伐でコイン/ダイヤドロップ
 - dimensional_gate: 非衝突ポータル。進入エンティティを目標次元スポーンへ転移(右クリックで target 循環: twilight→skyreach→overworld)
