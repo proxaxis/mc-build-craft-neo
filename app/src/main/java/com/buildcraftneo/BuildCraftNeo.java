@@ -1,5 +1,9 @@
 package com.buildcraftneo;
 
+import com.buildcraftneo.command.BCNCommands;
+import com.buildcraftneo.data.BCNAttachments;
+import com.buildcraftneo.item.BCNItems;
+import com.buildcraftneo.restriction.Restrictions;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +14,10 @@ public class BuildCraftNeo implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("[BuildCraftNeo] initializing");
+        BCNAttachments.register();
+        BCNItems.register();
+        Restrictions.register();
+        BCNCommands.register();
+        LOGGER.info("[BuildCraftNeo] initialized");
     }
 }

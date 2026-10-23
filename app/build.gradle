@@ -19,7 +19,18 @@ repositories {
 dependencies {
     minecraft "net.minecraft:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Fabric API modules (subset of fabric-api 0.165.0+26.3, matching bundled versions)
+    implementation "net.fabricmc.fabric-api:fabric-api-base:2.0.6+fcdff87f5d"
+    implementation "net.fabricmc.fabric-api:fabric-command-api-v2:3.1.2+fcdff87f5d"
+    implementation "net.fabricmc.fabric-api:fabric-lifecycle-events-v1:4.1.9+ffef5f675d"
+    implementation "net.fabricmc.fabric-api:fabric-events-interaction-v0:5.3.9+b9b88df45d"
+    implementation "net.fabricmc.fabric-api:fabric-entity-events-v1:6.0.4+3434d6d95d"
+    implementation "net.fabricmc.fabric-api:fabric-data-attachment-api-v1:2.2.33+b9b88df45d"
+    implementation "net.fabricmc.fabric-api:fabric-networking-api-v1:6.4.0+a21c9eb65d"
+    implementation "net.fabricmc.fabric-api:fabric-game-rule-api-v1:4.0.10+3434d6d95d"
+    implementation "net.fabricmc.fabric-api:fabric-object-builder-api-v1:24.1.12+e2f63d3e5d"
+    implementation "net.fabricmc.fabric-api:fabric-registry-sync-v0:8.0.4+1ca9f6365d"
 }
 
 java {
