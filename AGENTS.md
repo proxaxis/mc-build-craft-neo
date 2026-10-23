@@ -34,6 +34,16 @@ Neo Builder MOD for Minecraft Fabric servers.
 - RCON コマンドは直列化して送信し、切断時は自動で再接続・1 回リトライする
 - 手動確認: `devin mcp list` / `devin mcp get testserver`
 
+## 実装済みシステム (buildcraftneo MOD)
+
+- 陣営/職業: `/bcn fake spawn|set|give|use|status` で RCON から全検証可能 (FakePlayer ハーネス)
+- 資源: MD(ウォレット)/MP/EFP = attachment。EFP は ServerLevel attachment、閾値超過で襲撃イベント
+- 工業: `stirling_engine`/`quarry`/`macerator`/`item_pipe` ブロック。`/bcn machine info|insert|extract|mj`
+- 武器/魔法: GunItem(矢弾), SpellItem, AbilityItem(職業ゲートMP消費)。26.3 は武器タグ判定 (SwordsItem無し、ItemTags.SWORDS 等)
+- 災害: `/bcn disaster trigger|threshold`
+- 一括採掘: スニーク+ツール破壊で発動、`/bcn vein <pos>` でテスト
+- 経済: 6種コイン、fake deposit/withdraw
+
 ## ビルド・デプロイ (app/)
 
 - MOD 本体: `app/` = 単一統合 Fabric MOD `buildcraftneo` (Mojmap。MC 26.3 は非難読化のため `dev.architectury.loom-no-remap` を使用。fabric-loom + mappings は不可)
