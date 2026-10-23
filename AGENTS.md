@@ -33,3 +33,13 @@ Neo Builder MOD for Minecraft Fabric servers.
 - testserver は `docker compose up testserver` で起動。`docker exec mc_build_craft_neo_testserver rcon-cli <cmd>` でも同等の操作が可能 (コンテナ内 `RCON_PASSWORD` 環境変数を使用)
 - RCON コマンドは直列化して送信し、切断時は自動で再接続・1 回リトライする
 - 手動確認: `devin mcp list` / `devin mcp get testserver`
+
+## ビルド・デプロイ (app/)
+
+- MOD 本体: `app/` = 単一統合 Fabric MOD `buildcraftneo` (Mojmap。MC 26.3 は非難読化のため `dev.architectury.loom-no-remap` を使用。fabric-loom + mappings は不可)
+- ビルド&デプロイ一括: `scripts/build-and-deploy.sh --restart` (app コンテナ内で `./gradlew build` し jar を `/data/mods/` へコピー&再起動)
+- 手動ビルド: `docker exec -e JAVA_HOME=/home/developper/tools/jdk-25 -e PATH=/home/developper/tools/jdk-25/bin:$PATH mc_build_craft_neo_app bash -c 'cd /app && ./gradlew build --no-daemon -x javadoc'`
+- testserver の mods: `fabric-api-0.165.0+26.3.jar` (Modrinth から手動配置済み) + `buildcraftneo-*.jar`
+- Java 25 必須 (operationer コンテナに Java は無い。app コンテナ内 `/home/developper/tools/jdk-25` に Temurin 25、`tools/gradle-9.8.2` をインストール済み)
+- ログ確認: `docker logs mc_build_craft_neo_testserver`
+- RCON テスト: MCP `testserver` 経由 (`execute_command` など)

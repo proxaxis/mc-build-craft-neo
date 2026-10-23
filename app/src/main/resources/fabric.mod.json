@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "buildcraftneo",
+  "version": "${version}",
+  "name": "Build Craft Neo",
+  "description": "Build Craft Neo: industry, magic, economy and warfare mod pack core for Minecraft 26.3 Fabric.",
+  "authors": ["proxaxis"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.buildcraftneo.BuildCraftNeo"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.20.0",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
