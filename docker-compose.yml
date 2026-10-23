@@ -1,0 +1,50 @@
+name: mc_build_craft_neo
+
+services:
+  # Development Container
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    image: mc-build-craft-neo-app:latest
+    container_name: mc_build_craft_neo_app
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./app:/app:cached
+
+  # Test Minecraft Fabric Server
+  testserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.testserver
+    image: mc-build-craft-neo-testserver:latest
+    container_name: mc_build_craft_neo_testserver
+    environment:
+      EULA: "TRUE"
+      TYPE: "FABRIC"
+      VERSION: "26.3"
+      ONLINE_MODE: "FALSE"
+      ENABLE_RCON: "true"
+      RCON_PASSWORD: "devpassword"
+      JVM_XX_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    ports:
+      - "25565:25565"
+      - "25575:25575"
+      - "5005:5005"
+    stdin_open: true
+    tty: true
+    volumes:
+      - nv_testserver_data:/data
+
+  # Operation Agent
+  operationer:
+    image: ws-operationer:latest
+    container_name: mc_build_craft_neo_operationer
+    shm_size: "2gb"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/operationer
+
+volumes:
+  nv_testserver_data:

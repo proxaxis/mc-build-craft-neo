@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "testserver": {
+      "command": "node",
+      "args": ["/operationer/.devin/mcp/testserver/server.mjs"],
+      "env": {
+        "MC_RCON_HOST": "testserver",
+        "MC_RCON_PORT": "25575",
+        "MC_RCON_PASSWORD": "devpassword"
+      }
+    }
+  }
+}
