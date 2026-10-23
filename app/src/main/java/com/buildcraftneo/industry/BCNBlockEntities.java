@@ -13,12 +13,18 @@ public final class BCNBlockEntities {
     public static BlockEntityType<QuarryBlockEntity> QUARRY;
     public static BlockEntityType<MaceratorBlockEntity> MACERATOR;
     public static BlockEntityType<ItemPipeBlockEntity> ITEM_PIPE;
+    public static BlockEntityType<TeleportPipeBlockEntity> TELEPORT_PIPE;
+    public static BlockEntityType<NuclearReactorBlockEntity> NUCLEAR_REACTOR;
+    public static BlockEntityType<RequestPipeBlockEntity> REQUEST_PIPE;
 
     public static void register() {
         STIRLING_ENGINE = type("stirling_engine", StirlingEngineBlockEntity::new, BCNBlocks.STIRLING_ENGINE);
         QUARRY = type("quarry", QuarryBlockEntity::new, BCNBlocks.QUARRY);
         MACERATOR = type("macerator", MaceratorBlockEntity::new, BCNBlocks.MACERATOR);
         ITEM_PIPE = type("item_pipe", ItemPipeBlockEntity::new, BCNBlocks.ITEM_PIPE);
+        TELEPORT_PIPE = type("teleport_pipe", TeleportPipeBlockEntity::new, BCNBlocks.TELEPORT_PIPE);
+        NUCLEAR_REACTOR = type("nuclear_reactor", NuclearReactorBlockEntity::new, BCNBlocks.NUCLEAR_REACTOR);
+        REQUEST_PIPE = type("request_pipe", RequestPipeBlockEntity::new, BCNBlocks.REQUEST_PIPE);
     }
 
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> type(

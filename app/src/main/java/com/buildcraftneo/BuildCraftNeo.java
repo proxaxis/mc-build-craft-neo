@@ -28,6 +28,13 @@ public class BuildCraftNeo implements ModInitializer {
         DisasterManager.register();
         VeinMiner.register();
         BCNCommands.register();
+        net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            if (handler.getPlayer() instanceof net.minecraft.server.level.ServerPlayer p
+                    && com.buildcraftneo.data.Profiles.faction(p) == com.buildcraftneo.data.Faction.NONE) {
+                p.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                        "[BCN] 陣営を選択してください: /bcn join science または /bcn join magic"));
+            }
+        });
         LOGGER.info("[BuildCraftNeo] initialized");
     }
 }

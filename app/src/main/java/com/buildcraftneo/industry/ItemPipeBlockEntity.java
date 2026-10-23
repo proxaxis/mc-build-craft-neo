@@ -93,7 +93,7 @@ public class ItemPipeBlockEntity extends MachineBlockEntity {
         return stack; // undeliverable: keep in transit, retry next tick
     }
 
-    private static ItemStack extract(Container container, int max) {
+    public static ItemStack extract(Container container, int max) {
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack s = container.getItem(i);
             if (!s.isEmpty()) {
@@ -103,7 +103,7 @@ public class ItemPipeBlockEntity extends MachineBlockEntity {
         return ItemStack.EMPTY;
     }
 
-    private static ItemStack insert(Container container, ItemStack stack) {
+    public static ItemStack insert(Container container, ItemStack stack) {
         for (int i = 0; i < container.getContainerSize() && !stack.isEmpty(); i++) {
             ItemStack cur = container.getItem(i);
             if (cur.isEmpty()) {

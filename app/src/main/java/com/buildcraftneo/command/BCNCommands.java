@@ -73,6 +73,13 @@ public final class BCNCommands {
                         .then(Commands.literal("threshold").then(Commands.argument("value",
                                         IntegerArgumentType.integer(1))
                                 .executes(BCNCommands::disasterThreshold))))
+                .then(Commands.literal("join").then(Commands.argument("value", StringArgumentType.word())
+                        .executes(BCNCommands::joinFaction)))
+                .then(Commands.literal("dim")
+                        .then(Commands.literal("list").executes(BCNCommands::dimList))
+                        .then(Commands.literal("tp").then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("dim", StringArgumentType.word())
+                                        .executes(BCNCommands::dimTp)))))
                 .then(Commands.literal("vein").then(Commands.argument("pos",
                                 net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
                         .executes(BCNCommands::veinMine)))
@@ -90,7 +97,11 @@ public final class BCNCommands {
                         .then(Commands.literal("mj").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
                                 .then(Commands.argument("amount", LongArgumentType.longArg())
-                                        .executes(BCNCommands::machineMj)))))
+                                        .executes(BCNCommands::machineMj))))
+                        .then(Commands.literal("request").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .then(Commands.argument("item", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
+                                        .executes(BCNCommands::machineRequest)))))
                 .then(Commands.literal("fake")
                         .then(Commands.literal("list").executes(BCNCommands::fakeList))
                         .then(Commands.literal("spawn").then(Commands.argument("name", StringArgumentType.word())
@@ -467,6 +478,62 @@ public final class BCNCommands {
                 + " attack=" + p.getAttributeValue(
                 net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
                 + " mpmax=" + Profiles.mpMax(p));
+        return 1;
+    }
+
+    private static int joinFaction(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer p = ctx.getSource().getPlayerOrException();
+        Faction f = Faction.byName(StringArgumentType.getString(ctx, "value"));
+        if (f == Faction.NONE) {
+            ctx.getSource().sendFailure(Component.literal("choose science or magic"));
+            return 0;
+        }
+        if (Profiles.faction(p) != Faction.NONE) {
+            ctx.getSource().sendFailure(Component.literal("already in faction " + Profiles.faction(p).id()));
+            return 0;
+        }
+        Profiles.setFaction(p, f);
+        p.sendSystemMessage(Component.literal("[BCN] 陣営 " + f.id() + " に参加しました"));
+        tell(ctx, p.getName().getString() + " joined " + f.id());
+        return 1;
+    }
+
+    private static int dimList(CommandContext<CommandSourceStack> ctx) {
+        StringBuilder sb = new StringBuilder("levels:");
+        for (var l : ctx.getSource().getServer().getAllLevels()) {
+            sb.append(" ").append(l.dimension().identifier());
+        }
+        tell(ctx, sb.toString());
+        return 1;
+    }
+
+    private static int dimTp(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer p = EntityArgument.getPlayer(ctx, "player");
+        String dim = StringArgumentType.getString(ctx, "dim");
+        var id = net.minecraft.resources.Identifier.tryParse(dim);
+        var target = id == null ? null : ctx.getSource().getServer().getLevel(
+                net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, id));
+        if (target == null) {
+            ctx.getSource().sendFailure(Component.literal("no dimension " + dim));
+            return 0;
+        }
+        var pos = target.getRespawnData().pos();
+        p.teleportTo(target, pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5,
+                java.util.Set.of(), 0.0f, 0.0f, true);
+        tell(ctx, "teleported " + p.getName().getString() + " -> " + target.dimension().identifier());
+        return 1;
+    }
+
+    private static int machineRequest(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.RequestPipeBlockEntity rp)) {
+            ctx.getSource().sendFailure(Component.literal("no request pipe at " + pos.toShortString()));
+            return 0;
+        }
+        var item = net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "item").item().value();
+        rp.setRequested(item);
+        tell(ctx, "request=" + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item));
         return 1;
     }
 

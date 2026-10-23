@@ -30,12 +30,18 @@ public final class BCNBlocks {
     public static Block QUARRY;
     public static Block MACERATOR;
     public static Block ITEM_PIPE;
+    public static Block TELEPORT_PIPE;
+    public static Block NUCLEAR_REACTOR;
+    public static Block REQUEST_PIPE;
 
     public static void register() {
         STIRLING_ENGINE = machine("stirling_engine", StirlingEngineBlockEntity::new);
         QUARRY = machine("quarry", QuarryBlockEntity::new);
         MACERATOR = machine("macerator", MaceratorBlockEntity::new);
         ITEM_PIPE = machine("item_pipe", ItemPipeBlockEntity::new);
+        TELEPORT_PIPE = machine("teleport_pipe", TeleportPipeBlockEntity::new);
+        NUCLEAR_REACTOR = machine("nuclear_reactor", NuclearReactorBlockEntity::new);
+        REQUEST_PIPE = machine("request_pipe", RequestPipeBlockEntity::new);
     }
 
     private static Block machine(String name, BlockEntityFactory factory) {
@@ -83,6 +89,9 @@ public final class BCNBlocks {
                 case QuarryBlockEntity e -> QuarryBlockEntity.tick(level, pos, state, e);
                 case MaceratorBlockEntity e -> MaceratorBlockEntity.tick(level, pos, state, e);
                 case ItemPipeBlockEntity e -> ItemPipeBlockEntity.tick(level, pos, state, e);
+                case TeleportPipeBlockEntity e -> TeleportPipeBlockEntity.tick(level, pos, state, e);
+                case NuclearReactorBlockEntity e -> NuclearReactorBlockEntity.tick(level, pos, state, e);
+                case RequestPipeBlockEntity e -> RequestPipeBlockEntity.tick(level, pos, state, e);
                 default -> {}
             }
         }
@@ -91,6 +100,7 @@ public final class BCNBlocks {
         protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                 Player player, BlockHitResult hit) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MachineBlockEntity be) {
+                if (be instanceof TeleportPipeBlockEntity tp) tp.cycleChannel();
                 player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
                         "[BCN] " + be.status()));
             }
