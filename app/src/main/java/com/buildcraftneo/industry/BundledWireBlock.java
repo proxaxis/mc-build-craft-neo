@@ -7,32 +7,44 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.redstone.Orientation;
 
 /**
- * ProjectRed-style bundled wire: carries multiple independent digital
+ * ProjectRed-style bundled wire: carries up to 16 independent digital
  * channels over one cable. Channels are interfaced through insulated wires
  * of matching color - an uncolored insulated wire reads channel 0, red wire
- * reads channel 1, and so on. Bundled wires OR-merge neighbor masks along
- * the cable. Like insulated wires it is a non-conductor and emits only a
- * direct signal toward matching insulated wires, so plain redstone devices
- * next to the cable never see it. (Approximation: 4 channels instead of 16.)
+ * reads channel 1, and so on (see {@link InsulatedWireBlock#bitFor}).
+ *
+ * The per-node mask is stored in a {@link BundledWireBlockEntity} because a
+ * 16-bit mask cannot be a blockstate property. The {@code on} blockstate
+ * only drives the lit/unlit texture (mask != 0).
+ *
+ * Like insulated wires it is a non-conductor and emits only a direct signal
+ * toward matching insulated wires, so plain redstone devices next to the
+ * cable never see it.
  */
-public class BundledWireBlock extends Block {
-    /** Bitmask: bit0 = uncolored channel, bit1 = red, bit2 = green, bit3 = blue. */
-    public static final IntegerProperty MASK = IntegerProperty.create("mask", 0, 15);
+public class BundledWireBlock extends Block implements EntityBlock {
+    /** True while the cable carries at least one active channel. */
+    public static final BooleanProperty ON = BooleanProperty.create("on");
 
     public BundledWireBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(MASK, 0));
+        registerDefaultState(stateDefinition.any().setValue(ON, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(MASK);
+        builder.add(ON);
+    }
+
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new BundledWireBlockEntity(pos, state);
     }
 
     @Override
@@ -77,13 +89,21 @@ public class BundledWireBlock extends Block {
         }
         int mask = 0;
         for (BlockPos p : net) mask |= localInput(level, p);
-        mask &= 15;
+        mask &= 0xFFFF;
         for (BlockPos p : net) {
+            if (level.getBlockEntity(p) instanceof BundledWireBlockEntity be) {
+                be.setMask(mask);
+            }
             BlockState ns = level.getBlockState(p);
-            if (ns.getValue(MASK) != mask) {
-                level.setBlock(p, ns.setValue(MASK, mask), Block.UPDATE_ALL);
+            if (ns.getValue(ON) != (mask != 0)) {
+                level.setBlock(p, ns.setValue(ON, mask != 0), Block.UPDATE_ALL);
             }
         }
+    }
+
+    /** Current channel mask of a bundled node (0 when it has no block entity). */
+    public static int maskAt(BlockGetter level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof BundledWireBlockEntity be ? be.mask() : 0;
     }
 
     /** External inputs of a single cable node (insulated wires + plain signals). */
@@ -130,7 +150,7 @@ public class BundledWireBlock extends Block {
             Direction direction) {
         BlockState reader = level.getBlockState(pos.relative(direction.getOpposite()));
         if (reader.getBlock() instanceof InsulatedWireBlock w) {
-            return (state.getValue(MASK) & w.channelBit()) != 0 ? 15 : 0;
+            return (maskAt(level, pos) & w.channelBit()) != 0 ? 15 : 0;
         }
         return 0;
     }

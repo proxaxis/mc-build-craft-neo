@@ -55,6 +55,22 @@ public final class ArmorEffects {
         } else if (feet.is(BCNItems.NANO_BOOTS)) {
             grant(p, MobEffects.JUMP_BOOST, 0);       // Jump Boost I
         }
+
+        // Point Blank-style ADS approximation: sneaking while holding a
+        // scoped gun is an aiming stance - heavy slowdown (narrows the FOV
+        // through the movement-speed attribute, the only FOV lever available
+        // server-side) plus a slowness penalty like aiming down sights.
+        boolean aiming = p.isShiftKeyDown()
+                && p.getMainHandItem().getItem()
+                        instanceof com.buildcraftneo.item.GunItem
+                && com.buildcraftneo.item.GunItem.hasScope(p.getMainHandItem());
+        if (aiming) {
+            grant(p, MobEffects.SLOWNESS, 1);         // Slowness II = aiming
+            p.addTag("bcn_ads");
+        } else if (p.entityTags().contains("bcn_ads")) {
+            p.removeTag("bcn_ads");
+            p.removeEffect(MobEffects.SLOWNESS);
+        }
     }
 
     private static void grant(ServerPlayer p,

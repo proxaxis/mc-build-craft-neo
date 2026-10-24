@@ -45,5 +45,13 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         g.fill(bx, by + bh - mjH, bx + 8, by + bh, 0xFFDD6633);
         g.text(font, title, leftPos + 8, topPos + 6, 0xFF404040);
         g.text(font, "MJ", bx - 3, by + bh + 3, 0xFF404040);
+        // burn-fuel meter on the left edge (only machines that report one)
+        if (menu.fuelPercent() >= 0) {
+            int fx = leftPos - 14;
+            g.fill(fx - 1, by - 1, fx + 9, by + bh + 1, 0xFF333340);
+            int fh = menu.fuelPercent() * bh / 100;
+            g.fill(fx, by + bh - fh, fx + 8, by + bh, 0xFFCC3322);
+            g.text(font, "FUEL", fx - 8, by + bh + 3, 0xFF404040);
+        }
     }
 }

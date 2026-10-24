@@ -21,10 +21,12 @@ import net.minecraft.world.level.redstone.Orientation;
 /**
  * ProjectRed-style frame motor (approximation): on a rising redstone edge,
  * moves the frame structure in front of it one block along its facing.
- * All connected {@code frame} blocks move together; any non-frame block
- * touching a frame is carried along (blocks with block entities, fluids and
- * unbreakable blocks are left behind, and the move is cancelled if the
- * destination is obstructed).
+ * All connected {@link FrameBlock}s move together; {@code sticky_frame}
+ * blocks carry every movable non-frame block they touch (blocks with block
+ * entities, fluids and unbreakable blocks are left behind), plain
+ * {@code frame} blocks grab nothing, and a structure containing an
+ * {@code anchored_frame} can never move. The move is cancelled if any
+ * destination is obstructed.
  */
 public class FrameMotorBlock extends Block {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
@@ -86,7 +88,7 @@ public class FrameMotorBlock extends Block {
     /** Move the connected frame structure one step in {@code dir}. Public for command tests. */
     public static boolean move(Level level, BlockPos motorPos, Direction dir) {
         BlockPos front = motorPos.relative(dir);
-        if (!(level.getBlockState(front).getBlock() == BCNBlocks.FRAME)) return false;
+        if (!(level.getBlockState(front).getBlock() instanceof FrameBlock)) return false;
 
         // BFS all connected frames
         Set<BlockPos> frames = new HashSet<>();
@@ -98,16 +100,26 @@ public class FrameMotorBlock extends Block {
             for (Direction d : Direction.values()) {
                 BlockPos np = p.relative(d);
                 if (!frames.contains(np)
-                        && level.getBlockState(np).getBlock() == BCNBlocks.FRAME) {
+                        && level.getBlockState(np).getBlock() instanceof FrameBlock) {
                     queue.add(np);
                 }
             }
         }
         if (frames.isEmpty()) return false;
 
-        // frames carry every movable non-frame block they touch
+        // anchored frames pin the whole structure in place
+        for (BlockPos f : frames) {
+            if (((FrameBlock) level.getBlockState(f).getBlock()).kind()
+                    == FrameBlock.Kind.ANCHORED) {
+                return false;
+            }
+        }
+
+        // only sticky frames carry the movable non-frame blocks they touch
         Set<BlockPos> moveSet = new HashSet<>(frames);
         for (BlockPos f : frames) {
+            if (((FrameBlock) level.getBlockState(f).getBlock()).kind()
+                    != FrameBlock.Kind.STICKY) continue;
             for (Direction d : Direction.values()) {
                 BlockPos np = f.relative(d);
                 if (np.equals(motorPos) || moveSet.contains(np)) continue;

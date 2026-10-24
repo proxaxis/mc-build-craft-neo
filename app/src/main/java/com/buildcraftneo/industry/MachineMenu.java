@@ -18,6 +18,7 @@ public class MachineMenu extends AbstractContainerMenu {
     private final net.minecraft.core.BlockPos pos;
     private final DataSlot mjPct = DataSlot.standalone();
     private final DataSlot progPct = DataSlot.standalone();
+    private final DataSlot fuelPct = DataSlot.standalone();
 
     /** MenuSupplier constructor (client side). */
     public MachineMenu(int id, Inventory inv) {
@@ -36,6 +37,7 @@ public class MachineMenu extends AbstractContainerMenu {
         addStandardInventorySlots(inv, 8, 20 + 18 + 14);
         addDataSlot(mjPct);
         addDataSlot(progPct);
+        addDataSlot(fuelPct);
     }
 
     public int machineSlots() {
@@ -50,12 +52,17 @@ public class MachineMenu extends AbstractContainerMenu {
         return progPct.get();
     }
 
+    public int fuelPercent() {
+        return fuelPct.get();
+    }
+
     @Override
     public void broadcastChanges() {
         if (machineInv instanceof MachineBlockEntity mbe) {
             mjPct.set((int) Math.min(100,
                     mbe.stored() * 100 / Math.max(1, mbe.mjCapacity())));
             progPct.set(mbe.progressPercent());
+            fuelPct.set(mbe.fuelPercent());
         }
         super.broadcastChanges();
     }

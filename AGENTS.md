@@ -185,3 +185,20 @@ Neo Builder MOD for Minecraft Fabric servers.
 - **スポーンチャンク外は tick しない**: `setworldspawn` でスポーンが動くと、setblock/fill は成功するがブロックの scheduled tick が走らず「ワイヤが反応しない」に見える。`forceload query` で対象チャンクが forceload 済みか確認し、未ロードなら spawn 近くか forceload 下でテストすること。今回 spawn を 620,64,620 に移した際 x=120 付近が非tick領域になり全ワイヤが沈黙した
 - **26.3 の絶縁ワイヤ自己ラッチ対策**: ワイヤ→導体(床)→弱電力漏れ→ワイヤ が自己持続ループになるため、`getDirectSignal` は導体ブロックへ 0 を返す (読み手 = `pos.relative(direction.getOpposite())`)。ゲート/モーターは導体なので読めなくなる → `LogicGateBlockEntity.powered()`/`FrameMotorBlock` は instanceof で wire の POWER を直接読む
 - bundled_wire は「バス全体=全外部入力のOR」をネットワーク単位で再計算する (局所ORだと相互ラッチ)。絶縁ワイヤの `BUNDLED` フラグで bus 出力を入力へ逆流させない
+
+## 追加実装 (commit 4f67b4d 以降)
+
+- **bundled_wire 16ch 化**: `bundled_wire` の mask を BlockEntity (`BundledWireBlockEntity`) へ移し 16bit に拡張 (blockstate は 65536 変体になるため不可)。blockstate は視覚用 `on` bool のみ。`InsulatedWireBlock.COLORS` = 16色 (none,red,green,blue + white,orange,magenta,light_blue,yellow,lime,pink,gray,light_gray,cyan,purple,brown)。12色の絶縁ワイヤを追加 (色違いテクスチャは red 版を自前 PNG codec で色相変換、shapeless レシピ=wire+dye)。**検証済**: yellow(ch8) 伝搬・cyan(ch13) 不点灯・pink(ch10) 同居、両レバーOFFで全クリア、ch0(無色)互換
+- **IC2 発電機**: `wind_mill` (canSeeSky で (Y-64)/16+1 MJ/t、上限4、雷雨+1。Y=100 で 3MJ/t 確認)、`geothermal_generator` (隣接溶岩源 1個=2MJ/t、lava=3 で 6MJ/t push 確認)。ともに MJ push、燃料不要の近似
+- **frame 3種分化**: `frame` (構造のみ、非吸着に変更), `sticky_frame` (接する持ち運び可ブロックを吸着輸送), `anchored_frame` (構造に含まれると移動全体を拒否)。**検証済**: plain=石を残して移動、sticky=gold_block 同伴、anchored=移動拒否
+- **機械燃料メータ**: `MachineBlockEntity.fuelPercent()` (default -1=非表示)、StirlingEngine が override。MachineMenu に `fuelPct` DataSlot、MachineScreen 左端に赤 FUEL バー。**検証済**: Xvfb で StirlingEngine 画面に FUEL≈96% + 石炭スタック描画
+- **Cataclysm 弾幕フェーズ**: HP<75% で 160tick毎に12発の放射状 SmallFireball (`fireballRing`)。**検証済**: Monstrosity に200dmg→`kill @e[type=small_fireball]` で6発検出
+- **shop履歴GUI**: `ShopHistoryPayload` (S2Cカスタムパケット、pos+lines)。ShopMenu.broadcastChanges が `historyVersion` 変化時のみ送信。ShopScreen 右側に History パネル。**検証済**: Xvfb で "History" + 購入2行表示
+- **Point Blank ADS近似**: スニーク+スコープ付き銃で Slowness II (照準姿勢。FOV狭化は movement_speed 属性経由のサーバ側近似)。`bcn_ads` タグで付与管理し非照準時に removeEffect。**検証済**: fake sneak で slowness 付与→解除を確認
+
+## 検証ノート (追加4)
+
+- **26.3 レシピの ingredient 形式**: `{"item": "..."}` オブジェクトではなく素のID文字列 `"minecraft:xxx"`。旧形式は "List is too short: 0" で datapack ロード失敗→サーバ起動しない
+- **カスタムパケット登録**: Fabric API 0.165 では `PayloadTypeRegistry.clientboundPlay()` (playS2C() は存在しない)。`RegistryFriendlyByteBuf` ベースの StreamCodec
+- **FakePlayer は tick しない**: MobEffect は自然消滅しない → 効果の解除検証には明示 remove が必要 (`bcn_ads` タグ方式)。付与自体は ArmorEffects の定期 tick (TestFakes.all() 経由) で動作する
+- **デプロイ失敗時の復帰**: 前回デプロイで datapack ロード失敗→コンテナ停止すると `--restart` が "container is not running" で失敗する → `docker start` で起動すれば新jarで立ち上がる

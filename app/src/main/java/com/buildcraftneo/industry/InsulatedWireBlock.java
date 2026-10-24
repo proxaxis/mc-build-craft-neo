@@ -28,21 +28,31 @@ public class InsulatedWireBlock extends Block {
     public static final BooleanProperty BUNDLED =
             net.minecraft.world.level.block.state.properties.BooleanProperty.create("bundled");
 
+    /**
+     * All wire colors in bundled-cable channel order. {@code none} is the
+     * plain insulated wire; the other 15 are dyed variants - together they
+     * give the full 16-channel bus.
+     */
+    public static final java.util.List<String> COLORS = java.util.List.of(
+            "none", "red", "green", "blue", "white", "orange", "magenta",
+            "light_blue", "yellow", "lime", "pink", "gray", "light_gray",
+            "cyan", "purple", "brown");
+
     /** Wire color: signals only propagate between wires of the same color. */
     private final String color;
 
-    /** Bundled-cable channel bit for this wire's color (1=none,2=red,4=green,8=blue). */
+    public String color() {
+        return color;
+    }
+
+    /** Bundled-cable channel bit for this wire's color (index into COLORS). */
     public int channelBit() {
         return bitFor(color);
     }
 
     public static int bitFor(String color) {
-        return switch (color) {
-            case "red" -> 2;
-            case "green" -> 4;
-            case "blue" -> 8;
-            default -> 1;
-        };
+        int idx = COLORS.indexOf(color);
+        return idx < 0 ? 1 : 1 << idx;
     }
 
     public InsulatedWireBlock(Properties properties) {
@@ -109,7 +119,7 @@ public class InsulatedWireBlock extends Block {
             } else if (ns.getBlock() instanceof InsulatedWireBlock) {
                 continue; // different color: fully isolated
             } else if (ns.getBlock() instanceof BundledWireBlock) {
-                c = (ns.getValue(BundledWireBlock.MASK) & channelBit()) != 0 ? 15 : 0;
+                c = (BundledWireBlock.maskAt(level, nb) & channelBit()) != 0 ? 15 : 0;
                 fromBus = true;
             } else {
                 // merged signal is safe to read here: this wire emits no direct

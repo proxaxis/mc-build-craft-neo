@@ -25,6 +25,8 @@ public class ShopBlockEntity extends MachineBlockEntity {
     private String owner = "";
     /** Last N sale lines (volatile - not persisted). */
     private final java.util.ArrayDeque<String> history = new java.util.ArrayDeque<>();
+    /** Bumped whenever history changes; lets menus resend only on change. */
+    private int historyVersion;
 
     public ShopBlockEntity(BlockPos pos, BlockState state) {
         super(BCNBlockEntities.SHOP, pos, state, SLOTS);
@@ -65,6 +67,7 @@ public class ShopBlockEntity extends MachineBlockEntity {
                 if (history.size() >= 10) history.pollFirst();
                 history.addLast(p.getName().getString() + " bought 1x"
                         + BuiltInRegistries.ITEM.getKey(offer) + " for " + price + " MD");
+                historyVersion++;
                 setChanged();
                 return "sold 1x" + BuiltInRegistries.ITEM.getKey(offer)
                         + " for " + price + " MD";
@@ -90,6 +93,10 @@ public class ShopBlockEntity extends MachineBlockEntity {
 
     public java.util.List<String> history() {
         return java.util.List.copyOf(history);
+    }
+
+    public int historyVersion() {
+        return historyVersion;
     }
 
     public String offerId() {

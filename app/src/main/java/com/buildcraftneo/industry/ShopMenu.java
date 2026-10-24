@@ -16,6 +16,8 @@ import net.minecraft.world.item.ItemStack;
  */
 public class ShopMenu extends AbstractContainerMenu {
     private final Container shopInv;
+    private final Inventory playerInv;
+    private int lastHistoryVersion = -1;
 
     /** MenuSupplier constructor (client side): placeholder container. */
     public ShopMenu(int id, Inventory inv) {
@@ -25,10 +27,25 @@ public class ShopMenu extends AbstractContainerMenu {
     public ShopMenu(int id, Inventory inv, Container shopInv, ContainerLevelAccess access) {
         super(BCNMenus.SHOP, id);
         this.shopInv = shopInv;
+        this.playerInv = inv;
         for (int i = 0; i < ShopBlockEntity.SLOTS; i++) {
             addSlot(new Slot(shopInv, i, 8 + (i % 9) * 18, 18 + (i / 9) * 18));
         }
         addStandardInventorySlots(inv, 8, 18 + 3 * 18 + 14);
+    }
+
+    @Override
+    public void broadcastChanges() {
+        // push sale history to the open client screen whenever it changes
+        if (shopInv instanceof ShopBlockEntity shop
+                && shop.historyVersion() != lastHistoryVersion
+                && playerInv.player instanceof net.minecraft.server.level.ServerPlayer sp) {
+            lastHistoryVersion = shop.historyVersion();
+            net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(sp,
+                    new com.buildcraftneo.net.ShopHistoryPayload(
+                            shop.getBlockPos(), shop.history()));
+        }
+        super.broadcastChanges();
     }
 
     public int shopSlots() {

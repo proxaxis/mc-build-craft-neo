@@ -138,6 +138,10 @@ public final class BossManager {
         if (level.getGameTime() % 60 == 20) {
             fireballVolley(level, b);
         }
+        // bullet-hell phase (<75% HP): radial fireball ring every 160 ticks
+        if (hp < 0.75f && level.getGameTime() % 160 == 40) {
+            fireballRing(level, b);
+        }
         // phase 2 (<50% HP): summon two minions, once
         if (hp < 0.5f && (t.phaseFlags & 1) == 0) {
             t.phaseFlags |= 1;
@@ -172,6 +176,20 @@ public final class BossManager {
                 level, boss, aim.scale(1.5));
         fb.setPos(boss.getX() + aim.x * 1.5, boss.getEyeY(), boss.getZ() + aim.z * 1.5);
         level.addFreshEntity(fb);
+    }
+
+    /** Cataclysm-style bullet phase: a ring of fireballs in every direction. */
+    private static void fireballRing(ServerLevel level, LivingEntity boss) {
+        int count = 12;
+        for (int i = 0; i < count; i++) {
+            double angle = Math.PI * 2 * i / count;
+            Vec3 dir = new Vec3(Math.cos(angle), -0.05, Math.sin(angle));
+            var fb = new net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball(
+                    level, boss, dir.scale(1.2));
+            fb.setPos(boss.getX() + dir.x * 1.5, boss.getEyeY(),
+                    boss.getZ() + dir.z * 1.5);
+            level.addFreshEntity(fb);
+        }
     }
 
     private static void aoeSmash(ServerLevel level, LivingEntity boss, double radius,

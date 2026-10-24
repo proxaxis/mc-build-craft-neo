@@ -59,6 +59,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements Containe
         return 0;
     }
 
+    /** 0-100 burn-fuel remaining for GUI meters; -1 hides the meter. */
+    public int fuelPercent() {
+        return -1;
+    }
+
     // ---- Container ----
 
     @Override

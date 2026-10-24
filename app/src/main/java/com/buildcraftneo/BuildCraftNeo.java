@@ -19,6 +19,9 @@ public class BuildCraftNeo implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.clientboundPlay()
+                .register(com.buildcraftneo.net.ShopHistoryPayload.TYPE,
+                        com.buildcraftneo.net.ShopHistoryPayload.CODEC);
         BCNAttachments.register();
         BCNItems.register();
         BCNBlocks.register();

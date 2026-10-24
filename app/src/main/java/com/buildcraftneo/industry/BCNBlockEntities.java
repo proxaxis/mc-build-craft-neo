@@ -27,6 +27,9 @@ public final class BCNBlockEntities {
     public static BlockEntityType<AtmBlockEntity> ATM;
     public static BlockEntityType<CompressorBlockEntity> COMPRESSOR;
     public static BlockEntityType<SolarPanelBlockEntity> SOLAR_PANEL;
+    public static BlockEntityType<WindMillBlockEntity> WIND_MILL;
+    public static BlockEntityType<GeothermalGeneratorBlockEntity> GEOTHERMAL_GENERATOR;
+    public static BlockEntityType<BundledWireBlockEntity> BUNDLED_WIRE;
 
     public static void register() {
         STIRLING_ENGINE = type("stirling_engine", StirlingEngineBlockEntity::new, BCNBlocks.STIRLING_ENGINE);
@@ -47,6 +50,11 @@ public final class BCNBlockEntities {
         ATM = type("atm", AtmBlockEntity::new, BCNBlocks.ATM);
         COMPRESSOR = type("compressor", CompressorBlockEntity::new, BCNBlocks.COMPRESSOR);
         SOLAR_PANEL = type("solar_panel", SolarPanelBlockEntity::new, BCNBlocks.SOLAR_PANEL);
+        WIND_MILL = type("wind_mill", WindMillBlockEntity::new, BCNBlocks.WIND_MILL);
+        GEOTHERMAL_GENERATOR = type("geothermal_generator",
+                GeothermalGeneratorBlockEntity::new, BCNBlocks.GEOTHERMAL_GENERATOR);
+        BUNDLED_WIRE = type("bundled_wire", BundledWireBlockEntity::new,
+                BCNBlocks.BUNDLED_WIRE);
     }
 
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> type(

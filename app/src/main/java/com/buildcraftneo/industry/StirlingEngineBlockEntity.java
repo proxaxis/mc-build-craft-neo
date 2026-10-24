@@ -60,6 +60,11 @@ public class StirlingEngineBlockEntity extends MachineBlockEntity {
     }
 
     @Override
+    public int fuelPercent() {
+        return (int) Math.round(fuelFraction() * 100);
+    }
+
+    @Override
     public String status() {
         return super.status() + " fuel=" + fuelLeft + "t";
     }

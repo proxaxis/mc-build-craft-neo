@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "buildcraftneo:insulated_wire",
+    "minecraft:blue_dye"
+  ],
+  "result": {
+    "id": "buildcraftneo:insulated_wire_blue",
+    "count": 1
+  }
+}

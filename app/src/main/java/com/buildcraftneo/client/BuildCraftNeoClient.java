@@ -22,6 +22,10 @@ public class BuildCraftNeoClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+                .registerGlobalReceiver(
+                        com.buildcraftneo.net.ShopHistoryPayload.TYPE,
+                        (payload, context) -> ShopScreen.onHistory(payload.lines()));
         MenuScreens.register(BCNMenus.SHOP, ShopScreen::new);
         MenuScreens.register(BCNMenus.ATM, AtmScreen::new);
         MenuScreens.register(BCNMenus.MACHINE, MachineScreen::new);

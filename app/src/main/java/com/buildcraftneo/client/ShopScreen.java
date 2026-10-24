@@ -8,8 +8,16 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** Simple client screen for the shop menu: grey panel, 9x3 slot grid. */
 public class ShopScreen extends AbstractContainerScreen<ShopMenu> {
+    /** Last sale-history lines pushed by the server (see ShopHistoryPayload). */
+    private static volatile java.util.List<String> history = java.util.List.of();
+
+    public static void onHistory(java.util.List<String> lines) {
+        history = lines;
+    }
+
     public ShopScreen(ShopMenu menu, Inventory inv, Component title) {
         super(menu, inv, title, 176, 72 + 16 + 96);
+        history = java.util.List.of();
     }
 
     @Override
@@ -28,5 +36,18 @@ public class ShopScreen extends AbstractContainerScreen<ShopMenu> {
             g.fill(sx, sy, sx + 18, sy + 18, 0xFF6A6A6A);
         }
         g.text(font, title, leftPos + 8, topPos + 6, 0xFF404040);
+        // sale-history side panel, fed by ShopHistoryPayload
+        var lines = history;
+        if (!lines.isEmpty()) {
+            int hx = leftPos + imageWidth + 6;
+            int hy = topPos;
+            int hw = 150;
+            int hh = 14 + lines.size() * 10;
+            g.fill(hx, hy, hx + hw, hy + hh, 0xCC202028);
+            g.text(font, "History", hx + 4, hy + 4, 0xFFDDDDDD);
+            for (int i = 0; i < lines.size(); i++) {
+                g.text(font, lines.get(i), hx + 4, hy + 14 + i * 10, 0xFFAAAAAA);
+            }
+        }
     }
 }

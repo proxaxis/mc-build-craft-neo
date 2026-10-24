@@ -1,6 +1,7 @@
 package com.buildcraftneo.industry;
 
 import com.buildcraftneo.BCN;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -56,8 +57,16 @@ public final class BCNBlocks {
     public static Block INSULATED_WIRE_BLUE;
     public static Block BUNDLED_WIRE;
     public static Block FRAME;
+    public static Block STICKY_FRAME;
+    public static Block ANCHORED_FRAME;
     public static Block FRAME_MOTOR;
     public static Block SOLAR_PANEL;
+    public static Block WIND_MILL;
+    public static Block GEOTHERMAL_GENERATOR;
+
+    /** Extra insulated-wire colors by color name (channels 4-15). */
+    public static final java.util.Map<String, Block> INSULATED_WIRES =
+            new java.util.LinkedHashMap<>();
 
     public static void register() {
         STIRLING_ENGINE = machine("stirling_engine", StirlingEngineBlockEntity::new);
@@ -109,12 +118,29 @@ public final class BCNBlocks {
                 p -> new InsulatedWireBlock(p, "green"), wireProps());
         INSULATED_WIRE_BLUE = block("insulated_wire_blue",
                 p -> new InsulatedWireBlock(p, "blue"), wireProps());
+        // remaining bundled-bus channel colors (channels 4-15)
+        for (String c : List.of("white", "orange", "magenta", "light_blue",
+                "yellow", "lime", "pink", "gray", "light_gray", "cyan",
+                "purple", "brown")) {
+            INSULATED_WIRES.put(c, block("insulated_wire_" + c,
+                    p -> new InsulatedWireBlock(p, c), wireProps()));
+        }
         BUNDLED_WIRE = block("bundled_wire", BundledWireBlock::new, wireProps());
-        FRAME = block("frame", Block::new,
+        FRAME = block("frame", p -> new FrameBlock(p, FrameBlock.Kind.PLAIN),
                 BlockBehaviour.Properties.of().strength(1.0f).sound(SoundType.METAL));
+        STICKY_FRAME = block("sticky_frame",
+                p -> new FrameBlock(p, FrameBlock.Kind.STICKY),
+                BlockBehaviour.Properties.of().strength(1.0f).sound(SoundType.METAL)
+                        .friction(0.8f));
+        ANCHORED_FRAME = block("anchored_frame",
+                p -> new FrameBlock(p, FrameBlock.Kind.ANCHORED),
+                BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.METAL));
         FRAME_MOTOR = block("frame_motor", FrameMotorBlock::new,
                 BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.METAL));
         SOLAR_PANEL = machine("solar_panel", SolarPanelBlockEntity::new);
+        WIND_MILL = machine("wind_mill", WindMillBlockEntity::new);
+        GEOTHERMAL_GENERATOR = machine("geothermal_generator",
+                GeothermalGeneratorBlockEntity::new);
     }
 
     private static BlockBehaviour.Properties wireProps() {
@@ -195,6 +221,9 @@ public final class BCNBlocks {
                 case DimensionGateBlockEntity e -> DimensionGateBlockEntity.tick(level, pos, state, e);
                 case CompressorBlockEntity e -> CompressorBlockEntity.tick(level, pos, state, e);
                 case SolarPanelBlockEntity e -> SolarPanelBlockEntity.tick(level, pos, state, e);
+                case WindMillBlockEntity e -> WindMillBlockEntity.tick(level, pos, state, e);
+                case GeothermalGeneratorBlockEntity e ->
+                        GeothermalGeneratorBlockEntity.tick(level, pos, state, e);
                 default -> {}
             }
         }
