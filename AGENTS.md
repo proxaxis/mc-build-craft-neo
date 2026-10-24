@@ -85,3 +85,25 @@ Neo Builder MOD for Minecraft Fabric servers.
 - Java 25 必須 (operationer コンテナに Java は無い。app コンテナ内 `/home/developper/tools/jdk-25` に Temurin 25、`tools/gradle-9.8.2` をインストール済み)
 - ログ確認: `docker logs mc_build_craft_neo_testserver`
 - RCON テスト: MCP `testserver` 経由 (`execute_command` など)
+
+## 追加実装 (commit 以降追記)
+
+- **Logistics Pipes 拡張**: `supplier_pipe` (隣接コンテナを閾値まで自動補充、`/bcn machine supply <pos> <item> <keep>`), `sorting_pipe` (フィルタ一致のみ抽出・隣接コンテナはフィルタ専用宛先、`/bcn machine filter`), `crafting_pipe` (NBTレシピ `in*count -> out*count` をネットワークから材料集めてクラフト、`/bcn machine craft <pos> <in> <ic> <out> <oc>`)。`PipeNetwork` が BFS 共有。配送直後コンテナは 200tick pull 抑制 (`PipeNetwork.recentlySupplied`) で往復防止。**検証済**: sorting は鉄のみ dest へ (金残留)、crafting は鉄ブロックx2 生成、supplier は chest 補充確認
+- **Iron's Spells 深化**: `spellbook` (CUSTOM_DATA `spell` index、スニーク+右クリで7スペル切替、MP消費、magic陣営/caster職ゲート)、`scroll_*` 4種 (単発消費スクロール)。MP 自動回復は JobEffects 既存 (mage=3,magic=1/20tick)。**検証済**: heal→MP消費+regen、sneak cycle、scroll消費後 "holds nothing"
+- **Aether 拡張**: `gravitite_ore` (4tick毎に上のairへ浮遊移動、loot自壊ドロップ)、`skyroot_log`/`skyroot_planks`、`parachute` (slow_falling 20s + 上昇、耐久12回)。**検証済**: gravitite 設置後元位置が air、parachute fx=slow_falling
+- **Twilight 拡張**: boss_altar に NBT `boss` (0=Twilight Knight,1=Naga=Slime size6 HP300,2=Lich=Evoker HP250)。スニーク右クリ or `/bcn machine boss <pos> <idx>`。**構造物**: `/bcn dungeon maze <pos>` (15x15 迷路+祭壇), `/bcn dungeon tower <pos>` (5x5x12 石レンガ塔+頂上祭壇/宝箱)。**検証済**: Naga HP300、Lich=Evoker (DimBuffs twilight で HP750・名 "Twilight evoker" に上書きされる点に注意)、tower/maze の altar 配置
+- **Point Blank 拡張**: `smg`(7dmg,cd2,mag40), `shotgun`(5ペレットx4dmg,mag6), `ammo` アイテム。銃の耐久=マガジン残弾、空時に inv の ammo 消費でリロード (次回 use)。**検証済**: sniper 9発→Fail→ammo1消費でリロード→再射
+- **RPG series**: 新職業 `paladin`/`priest`/`marksman` (magic/none陣営許可)。アビリティ `ability_barrier`/`ability_consecrate`(アンデッド特効)/`ability_volley`(5連射)、武器 `paladin_mace`(holySmite)/`holy_staff`(PRIEST専用 sanctuary)/`marksman_bow`(SimpleBowItem: invの矢を消費して発射)。JobEffects: paladin=Absorption常時、marksman=Speed、priest=healerオーラ共有。**検証済**: marksman_bow 矢無しFail→矢で発射、各職ゲート/発動
+- **GvC 近似**: `/bcn disaster soldiers` → Vindicator x5("Guerrilla Soldier") + Pillager x3("Mercenary Gunner") + 重装ゾンビ("Heavy Trooper")。**検証済**: spawned=9
+- **ItemLocks 近似**: `/bcn lock <player|fake> <slot>` でスロットのスタックをスナップショット登録、10tick毎に消失/減少したスロットを復元。attachment `buildcraftneo:locked` (Map<String,ItemStack>) 永続化、`fake status` に `locks=` 表示。fake 検証用 `/bcn fake dropslot <name> <slot>`。**検証済**: diamondスロットを drop→10tickで復元を確認。実クライアントのQキー防止はクライアント制御のため近似
+- **ATM**: `atm` ブロック (Lightman's近似)。右クリ=全コイン入金、スニーク右クリ=500MD引出。`/bcn fake atm <name> <pos> [amount]`。**検証済**: gold_coin x3→300MD入金、100MD引出
+- **新コマンド**: `/bcn fake giveinv <name> <item> <count>` (inventory投入)、`/bcn fake sneak <name> <bool>`、`/bcn fake dropslot`、上記 machine/lock/dungeon/disaster 系
+- クライアント: 動的パイプモデルに supplier/sorting/crafting を追加 (LPテクスチャ: pipe_supplier/pipe_basic/pipe_crafting、不透明化変換済み)
+
+## 検証ノート (追加)
+
+- FakePlayer は `getPlayerList()` に含まれない → tick ベース強制処理 (ItemLocks等) は `TestFakes.all()` も回すこと
+- 遠方テストエリアは `forceload add` 必須 (setblock は chunk border 内のみ成功、"That position is not loaded")
+- DimBuffs は次元mobの HP/名を上書きする (twilight: HPx3、"Twilight <type>" 名) — `name=` セレクタではなく `type=` で検証
+- `inventory.add(stack)` は stack を空にする → 渡した stack の参照は add 後に空 (giveinv の表示は 0x air になるが実際は投入成功)
+- スロットindex: 0-8=ホットバー (selected=0 が mainhand 装備と共有)、9+=メイン

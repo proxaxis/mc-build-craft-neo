@@ -1,9 +1,5 @@
 package com.buildcraftneo.industry;
 
-import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.Container;
@@ -51,7 +47,8 @@ public class ItemPipeBlockEntity extends MachineBlockEntity {
             BlockEntity be = level.getBlockEntity(sourcePos);
             self.lastNeighbor = dir + " -> " + (be == null ? "null" : be.getClass().getSimpleName()
                     + " container=" + (be instanceof Container));
-            if (be instanceof Container container && !(be instanceof ItemPipeBlockEntity)) {
+            if (be instanceof Container container && !PipeNetwork.isPipe(be)
+                    && !PipeNetwork.recentlySupplied(level, sourcePos)) {
                 ItemStack taken = extract(container, BATCH);
                 self.lastNeighbor += " size=" + container.getContainerSize()
                         + " s0=" + (container.getContainerSize() > 0
@@ -71,29 +68,7 @@ public class ItemPipeBlockEntity extends MachineBlockEntity {
 
     /** Route stack through pipe network to the first reachable destination container. */
     private ItemStack deliver(Level level, BlockPos start, ItemStack stack, BlockPos exclude) {
-        Queue<BlockPos> queue = new ArrayDeque<>();
-        Set<BlockPos> seen = new HashSet<>();
-        queue.add(start);
-        seen.add(start);
-
-        while (!queue.isEmpty() && seen.size() < MAX_HOPS) {
-            BlockPos cur = queue.poll();
-            for (Direction dir : Direction.values()) {
-                BlockPos next = cur.relative(dir);
-                if (!seen.add(next)) continue;
-                BlockEntity be = level.getBlockEntity(next);
-                if (be instanceof ItemPipeBlockEntity || be instanceof RequestPipeBlockEntity) {
-                    queue.add(next);
-                } else if (be instanceof TeleportPipeBlockEntity tp) {
-                    stack = tp.inject(stack);
-                    if (stack.isEmpty()) return ItemStack.EMPTY;
-                } else if (be instanceof Container container && !next.equals(exclude)) {
-                    stack = insert(container, stack);
-                    if (stack.isEmpty()) return ItemStack.EMPTY;
-                }
-            }
-        }
-        return stack; // undeliverable: keep in transit, retry next tick
+        return PipeNetwork.route(level, start, stack, exclude);
     }
 
     public static ItemStack extract(Container container, int max) {

@@ -207,6 +207,45 @@ public final class Abilities {
         if (hits > 0) p.heal(hits);
     }
 
+    // ---- RPG series (Paladins / Archers) ----
+
+    /** Paladin: barrier aura - absorption + resistance for nearby allies. */
+    public static void barrier(ServerPlayer p, ServerLevel level) {
+        for (ServerPlayer ally : level.players()) {
+            if (ally.distanceTo(p) <= 8.0) {
+                ally.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 400, 1, true, true));
+                ally.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 200, 0, true, true));
+            }
+        }
+    }
+
+    /** Priest: consecrate - heals allies and burns undead in a radius. */
+    public static void consecrate(ServerPlayer p, ServerLevel level) {
+        for (ServerPlayer ally : level.players()) {
+            if (ally.distanceTo(p) <= 10.0) ally.heal(8.0f);
+        }
+        for (Entity e : monsters(level, p, 10)) {
+            if (e instanceof Mob m && (e instanceof net.minecraft.world.entity.monster.zombie.Zombie
+                    || e instanceof net.minecraft.world.entity.monster.skeleton.AbstractSkeleton
+                    || e instanceof net.minecraft.world.entity.monster.Phantom)) {
+                m.hurtServer(level, level.damageSources().magic(), 16.0f);
+                m.addEffect(new MobEffectInstance(MobEffects.GLOWING, 160, 0, true, true));
+            }
+        }
+    }
+
+    /** Marksman: volley - a forward cone of 5 fast arrows. */
+    public static void volley(ServerPlayer p, ServerLevel level) {
+        Vec3 look = p.getLookAngle();
+        for (int i = 0; i < 5; i++) {
+            Arrow arrow = new Arrow(level, p, new ItemStack(Items.ARROW), p.getMainHandItem());
+            arrow.setPos(p.getX() + look.x, p.getEyeY() + look.y, p.getZ() + look.z);
+            arrow.shoot(look.x, look.y, look.z, 4.0f, 3.0f);
+            arrow.setBaseDamage(10.0);
+            level.addFreshEntity(arrow);
+        }
+    }
+
     private static java.util.List<Entity> monsters(ServerLevel level, ServerPlayer p, double range) {
         return level.getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(Entity.class),
                 AABB.ofSize(p.position(), range * 2, range * 2, range * 2),

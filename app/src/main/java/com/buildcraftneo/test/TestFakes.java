@@ -31,4 +31,8 @@ public final class TestFakes {
     public static String list() {
         return FAKES.isEmpty() ? "(none)" : String.join(", ", FAKES.keySet());
     }
+
+    public static java.util.Collection<FakePlayer> all() {
+        return FAKES.values();
+    }
 }

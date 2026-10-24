@@ -28,6 +28,7 @@ public class BuildCraftNeo implements ModInitializer {
         JobEffects.register();
         com.buildcraftneo.job.JobXp.register();
         DisasterManager.register();
+        com.buildcraftneo.data.ItemLocks.register();
         com.buildcraftneo.dim.DimBuffs.register();
         com.buildcraftneo.dim.BossManager.register();
         VeinMiner.register();

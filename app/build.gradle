@@ -31,6 +31,11 @@ dependencies {
     implementation "net.fabricmc.fabric-api:fabric-game-rule-api-v1:4.0.10+3434d6d95d"
     implementation "net.fabricmc.fabric-api:fabric-object-builder-api-v1:24.1.12+e2f63d3e5d"
     implementation "net.fabricmc.fabric-api:fabric-registry-sync-v0:8.0.4+1ca9f6365d"
+    implementation "net.fabricmc.fabric-api:fabric-menu-api-v1:2.0.30+ed66f0a35d"
+    implementation "net.fabricmc.fabric-api:fabric-model-loading-api-v1:8.0.37+fcdff87f5d"
+    implementation "net.fabricmc.fabric-api:fabric-renderer-api-v1:17.0.17+79385d0b5d"
+    implementation "net.fabricmc.fabric-api:fabric-block-getter-api-v2:2.0.9+3434d6d95d"
+    implementation "net.fabricmc.fabric-api:fabric-renderer-indigo:9.1.25+b9d63e335d"
 }
 
 loom {

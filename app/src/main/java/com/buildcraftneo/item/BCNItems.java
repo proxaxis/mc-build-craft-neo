@@ -76,6 +76,27 @@ public final class BCNItems {
     public static Item ABILITY_HOLY_SMITE;
     public static Item ABILITY_SMOKE_BOMB;
     public static Item ABILITY_FORTIFY;
+    public static Item SPELLBOOK;
+    public static Item SCROLL_HEAL;
+    public static Item SCROLL_FIRE;
+    public static Item SCROLL_ENDER;
+    public static Item SCROLL_HOLY;
+
+    // point blank: extra guns + ammo
+    public static Item SMG;
+    public static Item SHOTGUN;
+    public static Item AMMO;
+
+    // aether analogue
+    public static Item PARACHUTE;
+
+    // RPG series (paladins/archers)
+    public static Item ABILITY_BARRIER;
+    public static Item ABILITY_CONSECRATE;
+    public static Item ABILITY_VOLLEY;
+    public static Item PALADIN_MACE;
+    public static Item HOLY_STAFF;
+    public static Item MARKSMAN_BOW;
 
     /** MD value of each coin tier. */
     public static final java.util.Map<Item, Long> COIN_VALUES = new java.util.LinkedHashMap<>();
@@ -127,6 +148,21 @@ public final class BCNItems {
         ABILITY_HOLY_SMITE = ability("ability_holy_smite", com.buildcraftneo.data.Job.GUARDIAN, 30, 240, Abilities::holySmite);
         ABILITY_SMOKE_BOMB = ability("ability_smoke_bomb", com.buildcraftneo.data.Job.ASSASSIN, 15, 200, Abilities::smokeBomb);
         ABILITY_FORTIFY = ability("ability_fortify", com.buildcraftneo.data.Job.GUARDIAN, 25, 300, Abilities::fortify);
+        SPELLBOOK = spellbook("spellbook");
+        SCROLL_HEAL = scroll("scroll_heal", 10, Abilities::heal);
+        SCROLL_FIRE = scroll("scroll_fire", 15, Abilities::meteor);
+        SCROLL_ENDER = scroll("scroll_ender", 8, Abilities::blink);
+        SCROLL_HOLY = scroll("scroll_holy", 15, Abilities::holySmite);
+        SMG = gun("smg", 7.0, 2, 40);
+        SHOTGUN = gunPellets("shotgun", 4.0, 20, 6, 5);
+        AMMO = simple("ammo");
+        PARACHUTE = parachute("parachute");
+        ABILITY_BARRIER = ability("ability_barrier", com.buildcraftneo.data.Job.PALADIN, 30, 300, Abilities::barrier);
+        ABILITY_CONSECRATE = ability("ability_consecrate", com.buildcraftneo.data.Job.PRIEST, 25, 200, Abilities::consecrate);
+        ABILITY_VOLLEY = ability("ability_volley", com.buildcraftneo.data.Job.MARKSMAN, 20, 120, Abilities::volley);
+        PALADIN_MACE = melee("paladin_mace", 11.0, -2.6, 80, Abilities::holySmite);
+        HOLY_STAFF = ability("holy_staff", com.buildcraftneo.data.Job.PRIEST, 15, 160, Abilities::sanctuary);
+        MARKSMAN_BOW = bow("marksman_bow", 14.0, 12);
 
         COIN_VALUES.put(COPPER_COIN, 1L);
         COIN_VALUES.put(IRON_COIN, 10L);
@@ -207,5 +243,44 @@ public final class BCNItems {
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
         return Registry.register(BuiltInRegistries.ITEM, id,
                 new AbilityItem(new Item.Properties().setId(key), job, mpCost, cooldown, effect));
+    }
+
+    private static Item gunPellets(String name, double damage, int cooldownTicks,
+            int magazine, int pellets) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new GunItem(new Item.Properties().setId(key).durability(magazine),
+                        damage, cooldownTicks, pellets));
+    }
+
+    private static Item spellbook(String name) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new SpellbookItem(new Item.Properties().setId(key).stacksTo(1)));
+    }
+
+    private static Item scroll(String name, int mpCost,
+            java.util.function.BiConsumer<net.minecraft.server.level.ServerPlayer,
+                    net.minecraft.server.level.ServerLevel> effect) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new ScrollItem(new Item.Properties().setId(key).stacksTo(16), mpCost, effect));
+    }
+
+    private static Item parachute(String name) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new ParachuteItem(new Item.Properties().setId(key).durability(12).stacksTo(1)));
+    }
+
+    private static Item bow(String name, double damage, int cooldownTicks) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new SimpleBowItem(new Item.Properties().setId(key).durability(384), damage, cooldownTicks));
     }
 }

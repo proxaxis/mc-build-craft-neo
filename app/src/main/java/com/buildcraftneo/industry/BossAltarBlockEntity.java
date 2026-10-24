@@ -16,10 +16,29 @@ import net.minecraft.world.level.block.state.BlockState;
  * (right-click or /bcn dungeon summon). One boss per altar at a time.
  */
 public class BossAltarBlockEntity extends MachineBlockEntity {
+    private static final String[] TWILIGHT_BOSSES = {"Twilight Knight", "Naga", "Lich"};
+
     private String lastBoss = "-";
+    private int boss;
 
     public BossAltarBlockEntity(BlockPos pos, BlockState state) {
         super(BCNBlockEntities.BOSS_ALTAR, pos, state, 0);
+    }
+
+    /** Cycle the twilight-dimension boss selection. Returns the new boss name. */
+    public String cycleBoss() {
+        boss = (boss + 1) % TWILIGHT_BOSSES.length;
+        setChanged();
+        return TWILIGHT_BOSSES[boss];
+    }
+
+    public String bossName() {
+        return TWILIGHT_BOSSES[boss];
+    }
+
+    public void setBoss(int index) {
+        boss = Math.floorMod(index, TWILIGHT_BOSSES.length);
+        setChanged();
     }
 
     public boolean summonBoss(ServerLevel level) {
@@ -31,7 +50,7 @@ public class BossAltarBlockEntity extends MachineBlockEntity {
         net.minecraft.world.entity.Mob boss = switch (dim) {
             case "buildcraftneo:skyreach" -> skyreachGuardian(level);
             case "minecraft:overworld" -> netherMonstrosity(level);
-            default -> twilightKnight(level);
+            default -> twilightBoss(level);
         };
         boss.setPos(getBlockPos().getX() + 0.5, getBlockPos().getY() + 1.0,
                 getBlockPos().getZ() + 0.5);
@@ -42,6 +61,41 @@ public class BossAltarBlockEntity extends MachineBlockEntity {
         lastBoss = boss.getUUID().toString().substring(0, 8);
         setChanged();
         return true;
+    }
+
+    private net.minecraft.world.entity.Mob twilightBoss(ServerLevel level) {
+        return switch (boss) {
+            case 1 -> naga(level);
+            case 2 -> lich(level);
+            default -> twilightKnight(level);
+        };
+    }
+
+    /** Twilight Forest-style Naga: a huge segmented serpent approximation (giant slime). */
+    private static net.minecraft.world.entity.monster.cubemob.Slime naga(ServerLevel level) {
+        var boss = new net.minecraft.world.entity.monster.cubemob.Slime(
+                net.minecraft.world.entity.EntityTypes.SLIME, level);
+        boss.setSize(6, true);
+        boss.setCustomName(net.minecraft.network.chat.Component.literal("Naga"));
+        var hp = boss.getAttribute(Attributes.MAX_HEALTH);
+        if (hp != null) {
+            hp.setBaseValue(300.0);
+            boss.setHealth(300.0f);
+        }
+        return boss;
+    }
+
+    /** Twilight Forest-style Lich: spellcasting boss (evoker approximation). */
+    private static net.minecraft.world.entity.monster.illager.Evoker lich(ServerLevel level) {
+        var boss = new net.minecraft.world.entity.monster.illager.Evoker(
+                net.minecraft.world.entity.EntityTypes.EVOKER, level);
+        boss.setCustomName(net.minecraft.network.chat.Component.literal("Lich"));
+        var hp = boss.getAttribute(Attributes.MAX_HEALTH);
+        if (hp != null) {
+            hp.setBaseValue(250.0);
+            boss.setHealth(250.0f);
+        }
+        return boss;
     }
 
     private static Zombie twilightKnight(ServerLevel level) {
@@ -97,6 +151,18 @@ public class BossAltarBlockEntity extends MachineBlockEntity {
 
     @Override
     public String status() {
-        return super.status() + " boss=" + lastBoss;
+        return super.status() + " boss=" + TWILIGHT_BOSSES[boss] + " last=" + lastBoss;
+    }
+
+    @Override
+    protected void saveAdditional(net.minecraft.world.level.storage.ValueOutput out) {
+        super.saveAdditional(out);
+        out.putInt("boss", boss);
+    }
+
+    @Override
+    protected void loadAdditional(net.minecraft.world.level.storage.ValueInput in) {
+        super.loadAdditional(in);
+        boss = in.getIntOr("boss", 0);
     }
 }

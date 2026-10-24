@@ -46,4 +46,68 @@ public final class Dungeon {
             box.setItem(1, new ItemStack(BCNItems.IRON_COIN, 8));
         }
     }
+
+    // ---- Twilight Forest-style structures ----
+
+    private static final int MAZE_R = 7; // hedge maze half-extent
+
+    /** Hedge-maze approximation: 15x15 mossy-cobble walls with a central altar. */
+    public static void maze(ServerLevel level, BlockPos c) {
+        for (int dx = -MAZE_R; dx <= MAZE_R; dx++) {
+            for (int dz = -MAZE_R; dz <= MAZE_R; dz++) {
+                BlockPos p = c.offset(dx, 0, dz);
+                if (mazeWall(dx, dz)) {
+                    level.setBlock(p, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 3);
+                    level.setBlock(p.above(), Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 3);
+                } else {
+                    level.setBlock(p, Blocks.AIR.defaultBlockState(), 3);
+                    level.setBlock(p.above(), Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+        }
+        level.setBlock(c.above(2), BCNBlocks.BOSS_ALTAR.defaultBlockState(), 3);
+    }
+
+    private static boolean mazeWall(int dx, int dz) {
+        boolean edge = Math.abs(dx) == MAZE_R || Math.abs(dz) == MAZE_R;
+        if (edge) {
+            // entrances: middle of south and east walls
+            return !((dx == 0 && dz == -MAZE_R) || (dz == 0 && dx == MAZE_R));
+        }
+        if (dx % 2 == 0 && dz % 2 == 0) return true;                  // pillars
+        if (dx % 2 == 0) return Math.floorMod(dz + dx / 2, 3) != 0;   // vertical walls w/ gaps
+        if (dz % 2 == 0) return Math.floorMod(dx + dz / 2, 3) != 0;   // horizontal walls w/ gaps
+        return false;
+    }
+
+    /** Lich tower approximation: hollow 5x5 stone-brick tower, 12 high, altar on top. */
+    public static void tower(ServerLevel level, BlockPos c) {
+        int r = 2, h = 12;
+        for (int dy = 0; dy < h; dy++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    BlockPos p = c.offset(dx, dy, dz);
+                    boolean edge = Math.abs(dx) == r || Math.abs(dz) == r;
+                    if (dy == 0 || dy == h - 1) {
+                        level.setBlock(p, Blocks.STONE_BRICKS.defaultBlockState(), 3);
+                    } else if (edge) {
+                        // arrow-slit windows every 3 blocks on the walls
+                        boolean window = dy % 3 == 1 && (dx == 0 || dz == 0);
+                        level.setBlock(p, window ? Blocks.AIR.defaultBlockState()
+                                : Blocks.STONE_BRICKS.defaultBlockState(), 3);
+                    } else {
+                        level.setBlock(p, Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
+            }
+        }
+        // top chamber: altar + loot chest
+        level.setBlock(c.offset(0, h - 1, 0), BCNBlocks.BOSS_ALTAR.defaultBlockState(), 3);
+        BlockPos chest = c.offset(1, h - 1, 1);
+        level.setBlock(chest, Blocks.CHEST.defaultBlockState(), 3);
+        BlockEntity be = level.getBlockEntity(chest);
+        if (be instanceof ChestBlockEntity box) {
+            box.setItem(0, new ItemStack(BCNItems.DIAMOND_COIN, 1));
+        }
+    }
 }

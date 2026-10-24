@@ -100,12 +100,12 @@ public class TeleportPipeBlockEntity extends MachineBlockEntity {
         for (Direction dir : Direction.values()) {
             BlockPos src = pos.relative(dir);
             BlockEntity be = level.getBlockEntity(src);
-            if (!(be instanceof Container container) || be instanceof ItemPipeBlockEntity
-                    || be instanceof TeleportPipeBlockEntity || be instanceof RequestPipeBlockEntity) {
+            if (!(be instanceof Container container) || PipeNetwork.isPipe(be)) {
                 continue;
             }
             Long t = RECENT.get(new Ref(dim, src));
             if (t != null && level.getGameTime() - t < RECENT_WINDOW) continue;
+            if (PipeNetwork.recentlySupplied(level, src)) continue;
             ItemStack taken = ItemPipeBlockEntity.extract(container, 8);
             if (!taken.isEmpty()) {
                 self.lastAct = "pull " + taken.getCount() + "x <- " + dir;

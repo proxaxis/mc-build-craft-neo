@@ -65,6 +65,42 @@ public final class DisasterManager {
         return spawned;
     }
 
+    /**
+     * GvC-style soldier raid: armed humanoid soldiers (vindicators/pillagers)
+     * spawn around the world spawn. Returns the number spawned.
+     */
+    public static int triggerSoldiers(MinecraftServer server) {
+        ServerLevel level = server.overworld();
+        BlockPos spawn = level.getRespawnData().pos();
+        int spawned = 0;
+
+        for (int i = 0; i < 5; i++) {
+            var v = new net.minecraft.world.entity.monster.illager.Vindicator(
+                    net.minecraft.world.entity.EntityTypes.VINDICATOR, level);
+            v.setCustomName(Component.literal("Guerrilla Soldier"));
+            spawned += spawn(level, raidPos(level, spawn, i), v);
+        }
+        for (int i = 0; i < 3; i++) {
+            var p = new Pillager(net.minecraft.world.entity.EntityTypes.PILLAGER, level);
+            p.setCustomName(Component.literal("Mercenary Gunner"));
+            spawned += spawn(level, raidPos(level, spawn, i + 5), p);
+        }
+        // heavy trooper: armored zombie approximation of GvC heavy infantry
+        var heavy = new Zombie(level);
+        heavy.setCustomName(Component.literal("Heavy Trooper"));
+        heavy.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND,
+                new ItemStack(Items.IRON_AXE));
+        heavy.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,
+                new ItemStack(Items.IRON_HELMET));
+        heavy.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST,
+                new ItemStack(Items.IRON_CHESTPLATE));
+        spawned += spawn(level, raidPos(level, spawn, 8), heavy);
+
+        server.getPlayerList().broadcastSystemMessage(Component.literal(
+                "§c[戦闘] 武装兵士部隊が襲来しました！ (spawned=" + spawned + ")"), false);
+        return spawned;
+    }
+
     private static BlockPos raidPos(ServerLevel level, BlockPos center, int index) {
         double angle = index * (Math.PI * 2 / 9);
         int x = center.getX() + (int) (Math.cos(angle) * 20);

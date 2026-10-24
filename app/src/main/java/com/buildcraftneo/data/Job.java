@@ -10,6 +10,9 @@ public enum Job {
     MAGE,
     HEALER,
     ARCHER,
+    PALADIN,
+    PRIEST,
+    MARKSMAN,
     SCIENTIST;
 
     public String id() {

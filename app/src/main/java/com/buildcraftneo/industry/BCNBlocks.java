@@ -41,6 +41,13 @@ public final class BCNBlocks {
     public static Block AMBROSIUM_ORE;
     public static Block ZANITE_ORE;
     public static Block LAMP;
+    public static Block SUPPLIER_PIPE;
+    public static Block SORTING_PIPE;
+    public static Block CRAFTING_PIPE;
+    public static Block ATM;
+    public static Block GRAVITITE_ORE;
+    public static Block SKYROOT_LOG;
+    public static Block SKYROOT_PLANKS;
 
     public static void register() {
         STIRLING_ENGINE = machine("stirling_engine", StirlingEngineBlockEntity::new);
@@ -69,6 +76,17 @@ public final class BCNBlocks {
         AMBROSIUM_ORE = block("ambrosium_ore", Block::new,
                 BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.STONE)
                         .requiresCorrectToolForDrops());
+        SUPPLIER_PIPE = machine("supplier_pipe", SupplierPipeBlockEntity::new);
+        SORTING_PIPE = machine("sorting_pipe", SortingPipeBlockEntity::new);
+        CRAFTING_PIPE = machine("crafting_pipe", CraftingPipeBlockEntity::new);
+        ATM = machine("atm", AtmBlockEntity::new);
+        GRAVITITE_ORE = block("gravitite_ore", GravititeBlock::new,
+                BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.STONE)
+                        .requiresCorrectToolForDrops());
+        SKYROOT_LOG = block("skyroot_log", Block::new,
+                BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.WOOD));
+        SKYROOT_PLANKS = block("skyroot_planks", Block::new,
+                BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.WOOD));
     }
 
     private static Block block(String name,
@@ -137,6 +155,9 @@ public final class BCNBlocks {
                 case TeleportPipeBlockEntity e -> TeleportPipeBlockEntity.tick(level, pos, state, e);
                 case NuclearReactorBlockEntity e -> NuclearReactorBlockEntity.tick(level, pos, state, e);
                 case RequestPipeBlockEntity e -> RequestPipeBlockEntity.tick(level, pos, state, e);
+                case SupplierPipeBlockEntity e -> SupplierPipeBlockEntity.tick(level, pos, state, e);
+                case SortingPipeBlockEntity e -> SortingPipeBlockEntity.tick(level, pos, state, e);
+                case CraftingPipeBlockEntity e -> CraftingPipeBlockEntity.tick(level, pos, state, e);
                 case DimensionGateBlockEntity e -> DimensionGateBlockEntity.tick(level, pos, state, e);
                 default -> {}
             }
@@ -161,9 +182,22 @@ public final class BCNBlocks {
                     gate.cycleTarget();
                 } else if (be instanceof BossAltarBlockEntity altar
                         && level instanceof net.minecraft.server.level.ServerLevel sl) {
+                    if (player.isShiftKeyDown()) {
+                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                                "[BCN] boss -> " + altar.cycleBoss()));
+                    } else {
+                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                                altar.summonBoss(sl) ? "[BCN] Boss summoned! (" + altar.bossName() + ")"
+                                                     : "[BCN] a boss is already nearby"));
+                    }
+                    return InteractionResult.SUCCESS_SERVER;
+                } else if (be instanceof AtmBlockEntity atm
+                        && player instanceof net.minecraft.server.level.ServerPlayer sp) {
                     player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
-                            altar.summonBoss(sl) ? "[BCN] Boss summoned!"
-                                                 : "[BCN] a boss is already nearby"));
+                            player.isShiftKeyDown()
+                                    ? "[BCN ATM] 引き出し " + atm.withdraw(sp, 500) + " MD"
+                                    : "[BCN ATM] 入金 " + atm.deposit(sp) + " MD"
+                                                    + " (残高=" + com.buildcraftneo.data.Profiles.md(sp) + ")"));
                     return InteractionResult.SUCCESS_SERVER;
                 } else if (be instanceof ShopBlockEntity shop && !player.isShiftKeyDown()
                         && player instanceof net.minecraft.server.level.ServerPlayer sp) {

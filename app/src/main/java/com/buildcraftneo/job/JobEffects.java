@@ -45,11 +45,16 @@ public final class JobEffects {
 
         // guardian: constant Resistance I (-20% damage taken)
         effect(p, job == Job.GUARDIAN ? MobEffects.RESISTANCE : null, 0);
+        // paladin: constant Absorption I (holy barrier)
+        effect(p, job == Job.PALADIN ? MobEffects.ABSORPTION : null, 0);
         // assassin: constant Speed handled by attribute; add Jump Boost for parkour feel
         effect(p, job == Job.ASSASSIN ? MobEffects.JUMP_BOOST : null, 0);
+        // marksman: Speed I for kiting
+        effect(p, job == Job.MARKSMAN ? MobEffects.SPEED : null, 0);
 
-        // healer aura: Regeneration on nearby allies every 5s
-        if (job == Job.HEALER && tick % 100 == 0 && p.level() instanceof net.minecraft.server.level.ServerLevel sl) {
+        // healer/priest aura: Regeneration on nearby allies every 5s
+        if ((job == Job.HEALER || job == Job.PRIEST) && tick % 100 == 0
+                && p.level() instanceof net.minecraft.server.level.ServerLevel sl) {
             for (ServerPlayer ally : sl.players()) {
                 if (ally.distanceTo(p) <= 8.0) {
                     ally.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 0, true, false));

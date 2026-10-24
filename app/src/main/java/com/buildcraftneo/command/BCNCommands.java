@@ -70,6 +70,7 @@ public final class BCNCommands {
                         .executes(BCNCommands::check)))
                 .then(Commands.literal("disaster")
                         .then(Commands.literal("trigger").executes(BCNCommands::disasterTrigger))
+                        .then(Commands.literal("soldiers").executes(BCNCommands::disasterSoldiers))
                         .then(Commands.literal("threshold").then(Commands.argument("value",
                                         IntegerArgumentType.integer(1))
                                 .executes(BCNCommands::disasterThreshold))))
@@ -101,7 +102,27 @@ public final class BCNCommands {
                         .then(Commands.literal("request").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
                                 .then(Commands.argument("item", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
-                                        .executes(BCNCommands::machineRequest)))))
+                                        .executes(BCNCommands::machineRequest))))
+                        .then(Commands.literal("supply").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .then(Commands.argument("item", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
+                                        .then(Commands.argument("keep", IntegerArgumentType.integer(1))
+                                                .executes(BCNCommands::machineSupply)))))
+                        .then(Commands.literal("filter").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .then(Commands.argument("item", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
+                                        .executes(BCNCommands::machineFilter))))
+                        .then(Commands.literal("craft").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .then(Commands.argument("in", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
+                                        .then(Commands.argument("incount", IntegerArgumentType.integer(1))
+                                                .then(Commands.argument("out", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
+                                                        .then(Commands.argument("outcount", IntegerArgumentType.integer(1))
+                                                                .executes(BCNCommands::machineCraft)))))))
+                        .then(Commands.literal("boss").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .then(Commands.argument("index", IntegerArgumentType.integer(0))
+                                        .executes(BCNCommands::machineBoss)))))
                 .then(Commands.literal("shop")
                         .then(Commands.literal("offer").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
@@ -132,7 +153,16 @@ public final class BCNCommands {
                                 .executes(BCNCommands::dungeonGen)))
                         .then(Commands.literal("summon").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
-                                .executes(BCNCommands::dungeonSummon))))
+                                .executes(BCNCommands::dungeonSummon)))
+                        .then(Commands.literal("maze").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .executes(BCNCommands::dungeonMaze)))
+                        .then(Commands.literal("tower").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .executes(BCNCommands::dungeonTower))))
+                .then(Commands.literal("lock").then(Commands.argument("player", StringArgumentType.word())
+                        .then(Commands.argument("slot", IntegerArgumentType.integer(0))
+                                .executes(BCNCommands::lockSlot))))
                 .then(Commands.literal("fake")
                         .then(Commands.literal("list").executes(BCNCommands::fakeList))
                         .then(Commands.literal("spawn").then(Commands.argument("name", StringArgumentType.word())
@@ -170,7 +200,23 @@ public final class BCNCommands {
                         .then(Commands.literal("menuclose").then(Commands.argument("name", StringArgumentType.word())
                                 .executes(BCNCommands::fakeMenuClose)))
                         .then(Commands.literal("jobeffects").then(Commands.argument("name", StringArgumentType.word())
-                                .executes(BCNCommands::fakeJobEffects)))));
+                                .executes(BCNCommands::fakeJobEffects)))
+                        .then(Commands.literal("giveinv").then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("item", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
+                                        .then(Commands.argument("count", IntegerArgumentType.integer(1))
+                                                .executes(BCNCommands::fakeGiveInv)))))
+                        .then(Commands.literal("sneak").then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("value", StringArgumentType.word())
+                                        .executes(BCNCommands::fakeSneak))))
+                        .then(Commands.literal("dropslot").then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("slot", IntegerArgumentType.integer(0))
+                                        .executes(BCNCommands::fakeDropSlot))))
+                        .then(Commands.literal("atm").then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("pos",
+                                                net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                        .executes(BCNCommands::fakeAtm)
+                                        .then(Commands.argument("amount", LongArgumentType.longArg(1))
+                                                .executes(BCNCommands::fakeAtmWithdraw)))))));
     }
 
     private static int info(CommandContext<CommandSourceStack> ctx) {
@@ -305,10 +351,17 @@ public final class BCNCommands {
     private static int fakeStatus(CommandContext<CommandSourceStack> ctx) {
         ServerPlayer p = fake(ctx);
         if (p == null) return 0;
-        tell(ctx, String.format("%s: faction=%s job=%s md=%d mp=%d/%d xp=%d level=%d",
+        StringBuilder fx = new StringBuilder();
+        for (var e : p.getActiveEffects()) {
+            fx.append(net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT
+                    .getKey(e.getEffect().value())).append(' ');
+        }
+        tell(ctx, String.format("%s: faction=%s job=%s md=%d mp=%d/%d xp=%d level=%d locks=%s fx=%s",
                 p.getName().getString(), Profiles.faction(p).id(), Profiles.job(p).id(),
                 Profiles.md(p), Profiles.mp(p), Profiles.mpMax(p),
-                Profiles.xp(p), Profiles.level(p)));
+                Profiles.xp(p), Profiles.level(p),
+                com.buildcraftneo.data.ItemLocks.describe(p),
+                fx.isEmpty() ? "-" : fx.toString().trim()));
         return 1;
     }
 
@@ -469,6 +522,146 @@ public final class BCNCommands {
         tell(ctx, "raid spawned " + n + " hostiles; efp="
                 + Profiles.efp(ctx.getSource().getServer().overworld()));
         return n;
+    }
+
+    private static int disasterSoldiers(CommandContext<CommandSourceStack> ctx) {
+        int n = com.buildcraftneo.disaster.DisasterManager.triggerSoldiers(ctx.getSource().getServer());
+        tell(ctx, "soldier raid spawned " + n + " hostiles");
+        return n;
+    }
+
+    private static int machineSupply(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.SupplierPipeBlockEntity sp)) {
+            ctx.getSource().sendFailure(Component.literal("no supplier pipe at " + pos.toShortString()));
+            return 0;
+        }
+        var item = net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "item").item().value();
+        sp.setSupply(item, IntegerArgumentType.getInteger(ctx, "keep"));
+        tell(ctx, sp.status());
+        return 1;
+    }
+
+    private static int machineFilter(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.SortingPipeBlockEntity sp)) {
+            ctx.getSource().sendFailure(Component.literal("no sorting pipe at " + pos.toShortString()));
+            return 0;
+        }
+        sp.setFilter(net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "item").item().value());
+        tell(ctx, sp.status());
+        return 1;
+    }
+
+    private static int machineCraft(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.CraftingPipeBlockEntity cp)) {
+            ctx.getSource().sendFailure(Component.literal("no crafting pipe at " + pos.toShortString()));
+            return 0;
+        }
+        var in = net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "in").item().value();
+        var out = net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "out").item().value();
+        cp.setRecipe(in, IntegerArgumentType.getInteger(ctx, "incount"),
+                out, IntegerArgumentType.getInteger(ctx, "outcount"));
+        tell(ctx, cp.status());
+        return 1;
+    }
+
+    private static int machineBoss(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.BossAltarBlockEntity altar)) {
+            ctx.getSource().sendFailure(Component.literal("no boss altar at " + pos.toShortString()));
+            return 0;
+        }
+        altar.setBoss(IntegerArgumentType.getInteger(ctx, "index"));
+        tell(ctx, "boss -> " + altar.bossName());
+        return 1;
+    }
+
+    private static int lockSlot(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = resolvePlayer(ctx, StringArgumentType.getString(ctx, "player"));
+        if (p == null) {
+            ctx.getSource().sendFailure(Component.literal("no player/fake"));
+            return 0;
+        }
+        tell(ctx, com.buildcraftneo.data.ItemLocks.toggle(p,
+                IntegerArgumentType.getInteger(ctx, "slot")));
+        return 1;
+    }
+
+    private static int dungeonMaze(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        com.buildcraftneo.dim.Dungeon.maze(ctx.getSource().getLevel(), pos);
+        tell(ctx, "maze generated at " + pos.toShortString());
+        return 1;
+    }
+
+    private static int dungeonTower(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        com.buildcraftneo.dim.Dungeon.tower(ctx.getSource().getLevel(), pos);
+        tell(ctx, "tower generated at " + pos.toShortString());
+        return 1;
+    }
+
+    private static int fakeGiveInv(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        var input = net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "item");
+        ItemStack stack = input.createItemStack(IntegerArgumentType.getInteger(ctx, "count"));
+        boolean ok = p.getInventory().add(stack);
+        tell(ctx, "inv gave " + stack.getCount() + "x "
+                + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem())
+                + " -> " + ok);
+        return ok ? 1 : 0;
+    }
+
+    private static int fakeSneak(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        boolean sneak = StringArgumentType.getString(ctx, "value").equalsIgnoreCase("true");
+        p.setShiftKeyDown(sneak);
+        tell(ctx, p.getName().getString() + " sneak=" + sneak);
+        return 1;
+    }
+
+    private static int fakeDropSlot(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        int slot = IntegerArgumentType.getInteger(ctx, "slot");
+        ItemStack dropped = p.getInventory().removeItemNoUpdate(slot);
+        tell(ctx, "dropped slot " + slot + ": " + (dropped.isEmpty() ? "(empty)"
+                : dropped.getCount() + "x "
+                + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(dropped.getItem())));
+        return 1;
+    }
+
+    private static int fakeAtm(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        return fakeAtm(ctx, -1);
+    }
+
+    private static int fakeAtmWithdraw(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        return fakeAtm(ctx, LongArgumentType.getLong(ctx, "amount"));
+    }
+
+    private static int fakeAtm(CommandContext<CommandSourceStack> ctx, long amount) throws CommandSyntaxException {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.AtmBlockEntity atm)) {
+            ctx.getSource().sendFailure(Component.literal("no atm at " + pos.toShortString()));
+            return 0;
+        }
+        if (amount < 0) {
+            tell(ctx, "deposit " + atm.deposit(p) + " MD -> balance=" + Profiles.md(p));
+        } else {
+            tell(ctx, "withdraw " + atm.withdraw(p, amount) + " MD -> balance=" + Profiles.md(p));
+        }
+        return 1;
     }
 
     private static int disasterThreshold(CommandContext<CommandSourceStack> ctx) {

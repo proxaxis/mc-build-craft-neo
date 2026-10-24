@@ -21,6 +21,10 @@ public final class BCNBlockEntities {
     public static BlockEntityType<BossAltarBlockEntity> BOSS_ALTAR;
     public static BlockEntityType<TimerBlockEntity> TIMER;
     public static BlockEntityType<LogicGateBlockEntity> LOGIC_GATE;
+    public static BlockEntityType<SupplierPipeBlockEntity> SUPPLIER_PIPE;
+    public static BlockEntityType<SortingPipeBlockEntity> SORTING_PIPE;
+    public static BlockEntityType<CraftingPipeBlockEntity> CRAFTING_PIPE;
+    public static BlockEntityType<AtmBlockEntity> ATM;
 
     public static void register() {
         STIRLING_ENGINE = type("stirling_engine", StirlingEngineBlockEntity::new, BCNBlocks.STIRLING_ENGINE);
@@ -35,6 +39,10 @@ public final class BCNBlockEntities {
         BOSS_ALTAR = type("boss_altar", BossAltarBlockEntity::new, BCNBlocks.BOSS_ALTAR);
         TIMER = type("timer", TimerBlockEntity::new, BCNBlocks.TIMER);
         LOGIC_GATE = type("logic_gate", LogicGateBlockEntity::new, BCNBlocks.LOGIC_GATE);
+        SUPPLIER_PIPE = type("supplier_pipe", SupplierPipeBlockEntity::new, BCNBlocks.SUPPLIER_PIPE);
+        SORTING_PIPE = type("sorting_pipe", SortingPipeBlockEntity::new, BCNBlocks.SORTING_PIPE);
+        CRAFTING_PIPE = type("crafting_pipe", CraftingPipeBlockEntity::new, BCNBlocks.CRAFTING_PIPE);
+        ATM = type("atm", AtmBlockEntity::new, BCNBlocks.ATM);
     }
 
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> type(

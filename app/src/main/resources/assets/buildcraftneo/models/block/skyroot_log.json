@@ -1,0 +1,1 @@
+{ "parent": "minecraft:block/cube_column", "textures": { "side": "buildcraftneo:block/skyroot_log", "end": "buildcraftneo:block/skyroot_log_top" } }

@@ -73,6 +73,15 @@ public final class BCNAttachments {
             .initializer(java.util.List::of)
             .buildAndRegister(BCN.id("auctions"));
 
+    /** Locked inventory slots: slot index (string) -> snapshot stack (ItemLocks analogue). */
+    public static final AttachmentType<java.util.Map<String, net.minecraft.world.item.ItemStack>> LOCKED =
+            AttachmentRegistry.<java.util.Map<String, net.minecraft.world.item.ItemStack>>builder()
+            .persistent(com.mojang.serialization.Codec.unboundedMap(
+                    com.mojang.serialization.Codec.STRING,
+                    net.minecraft.world.item.ItemStack.CODEC))
+            .initializer(java.util.Map::of)
+            .buildAndRegister(BCN.id("locked"));
+
     /** Pending auction payouts: seller name -> MD owed. */
     public static final AttachmentType<java.util.Map<String, Long>> AUCTION_EARNINGS =
             AttachmentRegistry.<java.util.Map<String, Long>>builder()

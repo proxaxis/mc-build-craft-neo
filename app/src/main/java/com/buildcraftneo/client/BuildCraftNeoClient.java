@@ -15,7 +15,10 @@ public class BuildCraftNeoClient implements ClientModInitializer {
     private static final Map<Block, Identifier> PIPE_TEXTURES = Map.of(
             BCNBlocks.ITEM_PIPE, BCN.id("block/pipe_iron"),
             BCNBlocks.TELEPORT_PIPE, BCN.id("block/pipe_diamond"),
-            BCNBlocks.REQUEST_PIPE, BCN.id("block/pipe_wood"));
+            BCNBlocks.REQUEST_PIPE, BCN.id("block/pipe_wood"),
+            BCNBlocks.SUPPLIER_PIPE, BCN.id("block/pipe_supplier"),
+            BCNBlocks.SORTING_PIPE, BCN.id("block/pipe_basic"),
+            BCNBlocks.CRAFTING_PIPE, BCN.id("block/pipe_crafting"));
 
     @Override
     public void onInitializeClient() {
