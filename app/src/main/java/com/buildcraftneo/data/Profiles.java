@@ -65,6 +65,26 @@ public final class Profiles {
         return true;
     }
 
+    // ---- XP / level (Player Skills) ----
+
+    public static int xp(ServerPlayer player) {
+        return player.getAttachedOrCreate(BCNAttachments.XP);
+    }
+
+    public static void setXp(ServerPlayer player, int value) {
+        player.setAttached(BCNAttachments.XP, Math.max(0, value));
+    }
+
+    public static int addXp(ServerPlayer player, int delta) {
+        int next = Math.max(0, xp(player) + delta);
+        player.setAttached(BCNAttachments.XP, next);
+        return next;
+    }
+
+    public static int level(ServerPlayer player) {
+        return xp(player) / 100 + 1;
+    }
+
     // ---- world state ----
 
     public static double efp(ServerLevel overworld) {

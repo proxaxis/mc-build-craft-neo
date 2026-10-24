@@ -39,6 +39,8 @@ public final class BCNBlocks {
     public static Block TIMER;
     public static Block LOGIC_GATE;
     public static Block AMBROSIUM_ORE;
+    public static Block ZANITE_ORE;
+    public static Block LAMP;
 
     public static void register() {
         STIRLING_ENGINE = machine("stirling_engine", StirlingEngineBlockEntity::new);
@@ -56,6 +58,14 @@ public final class BCNBlocks {
                 BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE));
         LOGIC_GATE = block("logic_gate", LogicGateBlock::new,
                 BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE));
+        LAMP = block("lamp", net.minecraft.world.level.block.RedstoneLampBlock::new,
+                BlockBehaviour.Properties.of().strength(0.3f)
+                        .lightLevel(st -> st.getValue(
+                                net.minecraft.world.level.block.state.properties
+                                        .BlockStateProperties.LIT) ? 15 : 0));
+        ZANITE_ORE = block("zanite_ore", Block::new,
+                BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.STONE)
+                        .requiresCorrectToolForDrops());
         AMBROSIUM_ORE = block("ambrosium_ore", Block::new,
                 BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.STONE)
                         .requiresCorrectToolForDrops());
@@ -152,7 +162,7 @@ public final class BCNBlocks {
                 } else if (be instanceof BossAltarBlockEntity altar
                         && level instanceof net.minecraft.server.level.ServerLevel sl) {
                     player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
-                            altar.summonBoss(sl) ? "[BCN] Twilight Knight summoned!"
+                            altar.summonBoss(sl) ? "[BCN] Boss summoned!"
                                                  : "[BCN] a boss is already nearby"));
                     return InteractionResult.SUCCESS_SERVER;
                 } else if (be instanceof ShopBlockEntity shop && !player.isShiftKeyDown()

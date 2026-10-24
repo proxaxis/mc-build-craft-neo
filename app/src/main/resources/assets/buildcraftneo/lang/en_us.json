@@ -59,5 +59,10 @@
   "item.buildcraftneo.ability_fortify": "Spell: Fortify",
   "item.buildcraftneo.timer": "Timer",
   "item.buildcraftneo.logic_gate": "Logic Gate",
-  "item.buildcraftneo.ambrosium_ore": "Ambrosium Ore"
+  "item.buildcraftneo.ambrosium_ore": "Ambrosium Ore",
+  "block.buildcraftneo.lamp": "Illumar Lamp",
+  "block.buildcraftneo.zanite_ore": "Zanite Ore",
+  "item.buildcraftneo.zanite_gemstone": "Zanite Gemstone",
+  "item.buildcraftneo.lamp": "Illumar Lamp",
+  "item.buildcraftneo.zanite_ore": "Zanite Ore"
 }

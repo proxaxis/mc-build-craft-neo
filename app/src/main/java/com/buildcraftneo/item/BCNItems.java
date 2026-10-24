@@ -50,6 +50,7 @@ public final class BCNItems {
 
     // dimension resources (Aether analogue)
     public static Item AMBROSIUM_SHARD;
+    public static Item ZANITE_GEMSTONE;
 
     // tiered shields (Shield Expansion analogue)
     public static Item SHIELD_WOODEN;
@@ -93,19 +94,20 @@ public final class BCNItems {
         GOLD_DUST = simple("gold_dust");
         COPPER_DUST = simple("copper_dust");
         APPRENTICE_WAND = spell("apprentice_wand", new Item.Properties());
-        SERVICE_PISTOL = gun("service_pistol", 8.0, 8);
-        ASSAULT_RIFLE = gun("assault_rifle", 10.0, 5);
-        SNIPER_RIFLE = gun("sniper_rifle", 24.0, 40);
-        LMG = gun("lmg", 6.0, 3);
-        KATANA = melee("katana", 9.0, -2.0);
-        GREATSWORD = melee("greatsword", 14.0, -3.2);
-        SPEAR = melee("spear", 7.0, -2.6);
-        GLAIVE = melee("glaive", 11.0, -2.8);
-        RAPIER = melee("rapier", 5.0, -1.4);
-        CLAYMORE = melee("claymore", 12.0, -3.0);
-        WAR_DAGGER = melee("war_dagger", 4.0, -1.0);
-        SCYTHE = melee("scythe", 10.0, -2.4);
+        SERVICE_PISTOL = gun("service_pistol", 8.0, 8, 20);
+        ASSAULT_RIFLE = gun("assault_rifle", 10.0, 5, 30);
+        SNIPER_RIFLE = gun("sniper_rifle", 24.0, 40, 10);
+        LMG = gun("lmg", 6.0, 3, 60);
+        KATANA = melee("katana", 9.0, -2.0, 60, Abilities::katanaDash);
+        GREATSWORD = melee("greatsword", 14.0, -3.2, 100, Abilities::shockwave);
+        SPEAR = melee("spear", 7.0, -2.6, 60, Abilities::lunge);
+        GLAIVE = melee("glaive", 11.0, -2.8, 80, Abilities::whirlwind);
+        RAPIER = melee("rapier", 5.0, -1.4, 80, Abilities::flurry);
+        CLAYMORE = melee("claymore", 12.0, -3.0, 100, Abilities::slam);
+        WAR_DAGGER = melee("war_dagger", 4.0, -1.0, 60, Abilities::venom);
+        SCYTHE = melee("scythe", 10.0, -2.4, 80, Abilities::harvest);
         AMBROSIUM_SHARD = ambrosiumShard("ambrosium_shard");
+        ZANITE_GEMSTONE = zanite("zanite_gemstone");
         SHIELD_WOODEN = shield("shield_wooden", 120);
         SHIELD_IRON = shield("shield_iron", 300);
         SHIELD_GOLDEN = shield("shield_golden", 200);
@@ -146,14 +148,17 @@ public final class BCNItems {
         return Registry.register(BuiltInRegistries.ITEM, id, new FireballWandItem(props.setId(key)));
     }
 
-    private static Item gun(String name, double damage, int cooldownTicks) {
+    private static Item gun(String name, double damage, int cooldownTicks, int magazine) {
         Identifier id = BCN.id(name);
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
         return Registry.register(BuiltInRegistries.ITEM, id,
-                new GunItem(new Item.Properties().setId(key), damage, cooldownTicks));
+                new GunItem(new Item.Properties().setId(key).durability(magazine),
+                        damage, cooldownTicks));
     }
 
-    private static Item melee(String name, double damage, double speed) {
+    private static Item melee(String name, double damage, double speed, int cooldown,
+            java.util.function.BiConsumer<net.minecraft.server.level.ServerPlayer,
+                    net.minecraft.server.level.ServerLevel> power) {
         Identifier id = BCN.id(name);
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
         var mods = net.minecraft.world.item.component.ItemAttributeModifiers.builder()
@@ -169,7 +174,15 @@ public final class BCNItems {
                         net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
                 .build();
         return Registry.register(BuiltInRegistries.ITEM, id,
-                new Item(new Item.Properties().setId(key).attributes(mods).stacksTo(1)));
+                new PowerWeaponItem(new Item.Properties().setId(key)
+                        .attributes(mods).stacksTo(1), cooldown, power));
+    }
+
+    private static Item zanite(String name) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new ZaniteGemstoneItem(new Item.Properties().setId(key)));
     }
 
     private static Item ambrosiumShard(String name) {

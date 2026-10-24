@@ -150,6 +150,63 @@ public final class Abilities {
         p.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 200, 1, true, true));
     }
 
+    // ---- Simply Swords-style weapon powers ----
+
+    public static void katanaDash(ServerPlayer p, ServerLevel level) {
+        Vec3 look = p.getLookAngle();
+        p.teleportTo(p.getX() + look.x * 3, p.getY(), p.getZ() + look.z * 3);
+        for (Entity e : monsters(level, p, 4)) {
+            ((Mob) e).hurtServer(level, p.damageSources().playerAttack(p), 8.0f);
+        }
+    }
+
+    public static void shockwave(ServerPlayer p, ServerLevel level) {
+        for (Entity e : monsters(level, p, 6)) {
+            Mob m = (Mob) e;
+            m.hurtServer(level, p.damageSources().playerAttack(p), 12.0f);
+            m.push((m.getX() - p.getX()) * 0.9, 0.4, (m.getZ() - p.getZ()) * 0.9);
+        }
+    }
+
+    public static void lunge(ServerPlayer p, ServerLevel level) {
+        Vec3 look = p.getLookAngle();
+        p.teleportTo(p.getX() + look.x * 4, p.getY(), p.getZ() + look.z * 4);
+    }
+
+    public static void whirlwind(ServerPlayer p, ServerLevel level) {
+        for (Entity e : monsters(level, p, 5)) {
+            ((Mob) e).hurtServer(level, p.damageSources().playerAttack(p), 9.0f);
+        }
+    }
+
+    public static void flurry(ServerPlayer p, ServerLevel level) {
+        p.addEffect(new MobEffectInstance(MobEffects.SPEED, 100, 2, true, true));
+        p.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 100, 0, true, true));
+    }
+
+    public static void slam(ServerPlayer p, ServerLevel level) {
+        for (Entity e : monsters(level, p, 7)) {
+            Mob m = (Mob) e;
+            m.hurtServer(level, p.damageSources().playerAttack(p), 10.0f);
+            m.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0, true, true));
+        }
+    }
+
+    public static void venom(ServerPlayer p, ServerLevel level) {
+        for (Entity e : monsters(level, p, 4)) {
+            ((Mob) e).addEffect(new MobEffectInstance(MobEffects.POISON, 100, 1, true, true));
+        }
+    }
+
+    public static void harvest(ServerPlayer p, ServerLevel level) {
+        int hits = 0;
+        for (Entity e : monsters(level, p, 5)) {
+            ((Mob) e).hurtServer(level, p.damageSources().playerAttack(p), 8.0f);
+            hits++;
+        }
+        if (hits > 0) p.heal(hits);
+    }
+
     private static java.util.List<Entity> monsters(ServerLevel level, ServerPlayer p, double range) {
         return level.getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(Entity.class),
                 AABB.ofSize(p.position(), range * 2, range * 2, range * 2),

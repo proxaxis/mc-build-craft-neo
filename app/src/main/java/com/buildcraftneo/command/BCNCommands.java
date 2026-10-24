@@ -305,9 +305,10 @@ public final class BCNCommands {
     private static int fakeStatus(CommandContext<CommandSourceStack> ctx) {
         ServerPlayer p = fake(ctx);
         if (p == null) return 0;
-        tell(ctx, String.format("%s: faction=%s job=%s md=%d mp=%d/%d",
+        tell(ctx, String.format("%s: faction=%s job=%s md=%d mp=%d/%d xp=%d level=%d",
                 p.getName().getString(), Profiles.faction(p).id(), Profiles.job(p).id(),
-                Profiles.md(p), Profiles.mp(p), Profiles.mpMax(p)));
+                Profiles.md(p), Profiles.mp(p), Profiles.mpMax(p),
+                Profiles.xp(p), Profiles.level(p)));
         return 1;
     }
 
@@ -410,6 +411,7 @@ public final class BCNCommands {
                 case "md" -> Profiles.setMd(p, Long.parseLong(value));
                 case "mp" -> Profiles.setMp(p, Integer.parseInt(value));
                 case "mpmax" -> p.setAttached(BCNAttachments.MP_MAX, Integer.parseInt(value));
+                case "xp" -> Profiles.setXp(p, Integer.parseInt(value));
                 default -> {
                     ctx.getSource().sendFailure(Component.literal("unknown attr " + attr));
                     return 0;
@@ -743,7 +745,7 @@ public final class BCNCommands {
             return 0;
         }
         boolean ok = altar.summonBoss(ctx.getSource().getLevel());
-        tell(ctx, ok ? "Twilight Knight summoned" : "a boss is already nearby");
+        tell(ctx, ok ? "boss summoned" : "a boss is already nearby");
         return ok ? 1 : 0;
     }
 

@@ -17,7 +17,7 @@ import net.minecraft.world.level.storage.ValueOutput;
  * the mode: NOT(back), OR(back|left|right), AND(left&right), XOR(left^right).
  */
 public class LogicGateBlockEntity extends BlockEntity {
-    public static final String[] MODES = {"not", "or", "and", "xor"};
+    public static final String[] MODES = {"not", "or", "and", "xor", "nand", "nor", "xnor"};
 
     private int mode;
 
@@ -51,7 +51,10 @@ public class LogicGateBlockEntity extends BlockEntity {
             case 0 -> !inBack;
             case 1 -> inBack || inLeft || inRight;
             case 2 -> inLeft && inRight;
-            default -> inLeft != inRight;
+            case 3 -> inLeft != inRight;
+            case 4 -> !(inLeft && inRight);
+            case 5 -> !(inBack || inLeft || inRight);
+            default -> inLeft == inRight;
         };
         if (state.getValue(BlockStateProperties.POWERED) != out) {
             level.setBlock(pos, state.setValue(BlockStateProperties.POWERED, out),

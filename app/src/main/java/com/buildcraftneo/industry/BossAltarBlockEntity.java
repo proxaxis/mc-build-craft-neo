@@ -27,10 +27,12 @@ public class BossAltarBlockEntity extends MachineBlockEntity {
             lastBoss = "alive-nearby";
             return false;
         }
-        boolean skyreach = level.dimension().identifier().getPath().equals("skyreach")
-                && level.dimension().identifier().getNamespace().equals("buildcraftneo");
-        net.minecraft.world.entity.Mob boss = skyreach
-                ? skyreachGuardian(level) : twilightKnight(level);
+        String dim = level.dimension().identifier().toString();
+        net.minecraft.world.entity.Mob boss = switch (dim) {
+            case "buildcraftneo:skyreach" -> skyreachGuardian(level);
+            case "minecraft:overworld" -> netherMonstrosity(level);
+            default -> twilightKnight(level);
+        };
         boss.setPos(getBlockPos().getX() + 0.5, getBlockPos().getY() + 1.0,
                 getBlockPos().getZ() + 0.5);
         boss.setPersistenceRequired();
@@ -72,6 +74,24 @@ public class BossAltarBlockEntity extends MachineBlockEntity {
         }
         var atk = boss.getAttribute(Attributes.ATTACK_DAMAGE);
         if (atk != null) atk.setBaseValue(14.0);
+        return boss;
+    }
+
+    /** Cataclysm-style raid boss for the overworld altar. */
+    private static net.minecraft.world.entity.monster.skeleton.WitherSkeleton netherMonstrosity(
+            ServerLevel level) {
+        var boss = new net.minecraft.world.entity.monster.skeleton.WitherSkeleton(
+                net.minecraft.world.entity.EntityTypes.WITHER_SKELETON, level);
+        boss.setCustomName(net.minecraft.network.chat.Component.literal("Nether Monstrosity"));
+        var hp = boss.getAttribute(Attributes.MAX_HEALTH);
+        if (hp != null) {
+            hp.setBaseValue(350.0);
+            boss.setHealth(350.0f);
+        }
+        var atk = boss.getAttribute(Attributes.ATTACK_DAMAGE);
+        if (atk != null) atk.setBaseValue(16.0);
+        boss.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.NETHERITE_SWORD));
+        boss.setDropChance(EquipmentSlot.MAINHAND, 0.0f);
         return boss;
     }
 

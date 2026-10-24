@@ -66,6 +66,12 @@ Neo Builder MOD for Minecraft Fabric servers.
 - Aether系: `ambrosium_ore` (loot_table で ambrosium_shard 1-3個ドロップ)、`ambrosium_shard` (使用で4HP回復)
 - 追加武器 (Simply Swords系): glaive/rapier/claymore/war_dagger/scythe (irons_spellbooks テクスチャ)
 - 動的パイプ描画: `PipeBlockStateModel` (クライアント) が emitQuads で隣接パイプ/コンテナを検出し細パイプ+アームを動的生成。Xvfb実機確認済
+- 武器パワー (Simply Swords系): 全近接武器が右クリック発動 (PowerWeaponItem)。katana→ダッシュ斬撃, greatsword→衝撃波+ノックバック, spear→ラウンジ, glaive→旋風, rapier→連撃バフ, claymore→範囲打撃+弱体, war_dagger→毒付与, scythe→ドレイン。クールダウン60-100t、MP消費なし
+- ProjectRed拡張: logic_gate 全7モード (not/or/and/xor/nand/nor/xnor、右クリック or NBT mode:0-6)、`lamp` (RedstoneLamp系、powered→lit、illumar テクスチャ)
+- Cataclysm系ボス: boss_altar は3次元対応 — overworld→Nether Monstrosity (WitherSkeleton HP350 ATK16), skyreach→Skyreach Guardian (Ravager HP300→DimBuffs 600), twilight/その他→Twilight Knight (HP200)
+- Aether拡張: `zanite_ore` (loot_table で zanite_gemstone 1-2個) + `zanite_gemstone` (使用でMP+20)
+- 銃マガジン (Point Blank系): durability=弾数 (pistol20/rifle30/sniper10/lmg60)、空だと use FAIL
+- Player Skills系 XP: `xp` attachment、Mob/boss kill でXP加算 (boss=100, monster=5)、level=xp/100+1、`/bcn fake set xp`・status表示、レベルアップ通知
 - 災害: `/bcn disaster trigger|threshold`
 - 一括採掘: スニーク+ツール破壊で発動、`/bcn vein <pos>` でテスト
 - 経済: 6種コイン、fake deposit/withdraw

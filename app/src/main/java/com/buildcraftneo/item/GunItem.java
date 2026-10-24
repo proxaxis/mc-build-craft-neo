@@ -25,6 +25,12 @@ public class GunItem extends Item {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (player instanceof ServerPlayer sp) {
+            var stack = player.getItemInHand(hand);
+            if (stack.getDamageValue() >= stack.getMaxDamage() - 1) {
+                sp.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                        "[BCN] マガジンが空です (リロードしてください)"));
+                return InteractionResult.FAIL;
+            }
             Vec3 look = player.getLookAngle();
             Arrow bullet = new Arrow(sp.level(), sp,
                     new ItemStack(Items.ARROW), player.getItemInHand(hand));
@@ -33,6 +39,7 @@ public class GunItem extends Item {
             bullet.setBaseDamage(damage);
             bullet.pickup = net.minecraft.world.entity.projectile.arrow.AbstractArrow.Pickup.DISALLOWED;
             sp.level().addFreshEntity(bullet);
+            stack.setDamageValue(stack.getDamageValue() + 1);
             player.getCooldowns().addCooldown(player.getItemInHand(hand), cooldownTicks);
         }
         return InteractionResult.SUCCESS_SERVER;

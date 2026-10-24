@@ -1,0 +1,4 @@
+{ "variants": {
+  "lit=false": { "model": "buildcraftneo:block/lamp_off" },
+  "lit=true": { "model": "buildcraftneo:block/lamp_on" }
+} }
