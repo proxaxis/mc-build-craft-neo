@@ -5,6 +5,7 @@ import com.buildcraftneo.item.BCNItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
@@ -109,5 +110,41 @@ public final class Dungeon {
         if (be instanceof ChestBlockEntity box) {
             box.setItem(0, new ItemStack(BCNItems.DIAMOND_COIN, 1));
         }
+    }
+
+    /** Cataclysm-style boss arena: blackstone ring, lava moat, center altar. */
+    public static void arena(ServerLevel level, BlockPos c) {
+        int r = 6;
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
+                double dist = Math.sqrt(dx * dx + dz * dz);
+                BlockPos p = c.offset(dx, 0, dz);
+                if (dist > r) continue;
+                if (dist > r - 1.5) {
+                    // outer wall: 3-high blackstone with netherite accents
+                    for (int dy = 0; dy < 3; dy++) {
+                        Block b = dy == 2 ? Blocks.GILDED_BLACKSTONE : Blocks.BLACKSTONE;
+                        level.setBlock(p.above(dy), b.defaultBlockState(), 3);
+                    }
+                } else if (dist > r - 3.0 && Math.floorMod(dx + dz, 2) == 0) {
+                    // lava moat ring
+                    level.setBlock(p, Blocks.LAVA.defaultBlockState(), 3);
+                    level.setBlock(p.above(), Blocks.AIR.defaultBlockState(), 3);
+                } else {
+                    level.setBlock(p, Blocks.POLISHED_BLACKSTONE.defaultBlockState(), 3);
+                    level.setBlock(p.above(), Blocks.AIR.defaultBlockState(), 3);
+                    level.setBlock(p.above(2), Blocks.AIR.defaultBlockState(), 3);
+                    level.setBlock(p.above(3), Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+        }
+        // two side entrances
+        for (int dy = 1; dy <= 2; dy++) {
+            level.setBlock(c.offset(-r, dy, 0), Blocks.AIR.defaultBlockState(), 3);
+            level.setBlock(c.offset(r, dy, 0), Blocks.AIR.defaultBlockState(), 3);
+        }
+        level.setBlock(c.offset(-r + 1, 0, 0), Blocks.POLISHED_BLACKSTONE.defaultBlockState(), 3);
+        level.setBlock(c.offset(r - 1, 0, 0), Blocks.POLISHED_BLACKSTONE.defaultBlockState(), 3);
+        level.setBlock(c.above(1), BCNBlocks.BOSS_ALTAR.defaultBlockState(), 3);
     }
 }

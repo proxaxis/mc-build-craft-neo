@@ -24,8 +24,16 @@ import net.minecraft.world.level.redstone.Orientation;
 public class InsulatedWireBlock extends Block {
     public static final IntegerProperty POWER = BlockStateProperties.POWER;
 
+    /** Wire color: signals only propagate between wires of the same color. */
+    private final String color;
+
     public InsulatedWireBlock(Properties properties) {
+        this(properties, "none");
+    }
+
+    public InsulatedWireBlock(Properties properties, String color) {
         super(properties);
+        this.color = color;
         registerDefaultState(stateDefinition.any().setValue(POWER, 0));
     }
 
@@ -59,15 +67,15 @@ public class InsulatedWireBlock extends Block {
         }
     }
 
-    /** Strongest incoming signal: adjacent source blocks or wire.power - 1. */
-    private static int inputPower(Level level, BlockPos pos) {
+    /** Strongest incoming signal: adjacent source blocks or same-color wire.power - 1. */
+    private int inputPower(Level level, BlockPos pos) {
         int power = 0;
         for (Direction dir : Direction.values()) {
             BlockPos nb = pos.relative(dir);
             BlockState ns = level.getBlockState(nb);
-            if (ns.getBlock() instanceof InsulatedWireBlock) {
+            if (ns.getBlock() instanceof InsulatedWireBlock w && w.color.equals(color)) {
                 power = Math.max(power, ns.getValue(POWER) - 1);
-            } else {
+            } else if (!(ns.getBlock() instanceof InsulatedWireBlock)) {
                 power = Math.max(power,
                         Math.max(level.getSignal(nb, dir),
                                 level.getDirectSignal(nb, dir)));

@@ -21,6 +21,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Tracks spawned dungeon bosses: drives a custom boss bar, Cataclysm-style
@@ -131,6 +132,10 @@ public final class BossManager {
         if (level.getGameTime() % 80 == 0) {
             aoeSmash(level, b, 5.0, 6.0f, false);
         }
+        // ranged fireball volley every 60 ticks when a player is in 4-24 blocks
+        if (level.getGameTime() % 60 == 20) {
+            fireballVolley(level, b);
+        }
         // phase 2 (<50% HP): summon two minions, once
         if (hp < 0.5f && (t.phaseFlags & 1) == 0) {
             t.phaseFlags |= 1;
@@ -149,6 +154,22 @@ public final class BossManager {
             t.phaseFlags |= 2;
             aoeSmash(level, b, 8.0, 12.0f, true);
         }
+    }
+
+    /** Cataclysm-style ranged attack: lob a small fireball at the nearest player. */
+    private static void fireballVolley(ServerLevel level, LivingEntity boss) {
+        var box = boss.getBoundingBox().inflate(24.0);
+        var players = level.getEntitiesOfClass(
+                net.minecraft.server.level.ServerPlayer.class, box,
+                p -> p.isAlive() && p.blockPosition().distSqr(boss.blockPosition()) >= 16.0);
+        if (players.isEmpty()) return;
+        var target = players.get(level.getRandom().nextInt(players.size()));
+        Vec3 aim = new Vec3(target.getX() - boss.getX(),
+                target.getEyeY() - boss.getEyeY(), target.getZ() - boss.getZ()).normalize();
+        var fb = new net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball(
+                level, boss, aim.scale(1.5));
+        fb.setPos(boss.getX() + aim.x * 1.5, boss.getEyeY(), boss.getZ() + aim.z * 1.5);
+        level.addFreshEntity(fb);
     }
 
     private static void aoeSmash(ServerLevel level, LivingEntity boss, double radius,

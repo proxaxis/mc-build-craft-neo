@@ -26,6 +26,7 @@ public class BuildCraftNeo implements ModInitializer {
         com.buildcraftneo.industry.BCNMenus.register();
         Restrictions.register();
         JobEffects.register();
+        com.buildcraftneo.job.ArmorEffects.register();
         com.buildcraftneo.job.JobXp.register();
         DisasterManager.register();
         com.buildcraftneo.data.ItemLocks.register();

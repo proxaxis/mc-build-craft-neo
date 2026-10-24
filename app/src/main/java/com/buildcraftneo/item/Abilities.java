@@ -111,6 +111,20 @@ public final class Abilities {
         level.addFreshEntity(bolt);
     }
 
+    /** Twilight Forest zombie-scepter effect: summon three zombie minions. */
+    public static void summonZombies(ServerPlayer p, ServerLevel level) {
+        for (int i = 0; i < 3; i++) {
+            double a = i * (Math.PI * 2.0 / 3.0);
+            var z = new net.minecraft.world.entity.monster.zombie.Zombie(
+                    net.minecraft.world.entity.EntityTypes.ZOMBIE, level);
+            z.setPos(p.getX() + Math.cos(a) * 1.5, p.getY(), p.getZ() + Math.sin(a) * 1.5);
+            z.setCustomName(net.minecraft.network.chat.Component.literal("Scepter Minion"));
+            z.setPersistenceRequired();
+            z.addTag("bcn_minion");
+            level.addFreshEntity(z);
+        }
+    }
+
     public static void blink(ServerPlayer p, ServerLevel level) {
         var hit = p.pick(16.0, 0.0f, false);
         Vec3 target;

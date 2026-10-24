@@ -101,6 +101,16 @@ public final class BCNItems {
     public static Item INC_AMMO;
     public static Item NAGA_SCALE;
     public static Item LICH_SCEPTER;
+    public static Item ZOMBIE_SCEPTER;
+    public static Item NAGA_CHESTPLATE;
+
+    // IC2 powered armor (approximation: constant effects, no EU charge)
+    public static Item NANO_CHESTPLATE;
+    public static Item QUANTUM_CHESTPLATE;
+
+    // Point Blank attachments
+    public static Item EXT_MAG;
+    public static Item SCOPE;
 
     /** MD value of each coin tier. */
     public static final java.util.Map<Item, Long> COIN_VALUES = new java.util.LinkedHashMap<>();
@@ -171,6 +181,15 @@ public final class BCNItems {
         INC_AMMO = simple("inc_ammo");
         NAGA_SCALE = simple("naga_scale");
         LICH_SCEPTER = lichScepter("lich_scepter");
+        ZOMBIE_SCEPTER = zombieScepter("zombie_scepter");
+        NAGA_CHESTPLATE = armor("naga_chestplate",
+                net.minecraft.world.item.equipment.ArmorMaterials.DIAMOND);
+        NANO_CHESTPLATE = armor("nano_chestplate",
+                net.minecraft.world.item.equipment.ArmorMaterials.DIAMOND);
+        QUANTUM_CHESTPLATE = armor("quantum_chestplate",
+                net.minecraft.world.item.equipment.ArmorMaterials.NETHERITE);
+        EXT_MAG = simple("ext_mag");
+        SCOPE = simple("scope");
 
         COIN_VALUES.put(COPPER_COIN, 1L);
         COIN_VALUES.put(IRON_COIN, 10L);
@@ -290,6 +309,30 @@ public final class BCNItems {
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
         return Registry.register(BuiltInRegistries.ITEM, id,
                 new SimpleBowItem(new Item.Properties().setId(key).durability(384), damage, cooldownTicks));
+    }
+
+    private static Item armor(String name,
+            net.minecraft.world.item.equipment.ArmorMaterial material) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new Item(new Item.Properties().setId(key).stacksTo(1)
+                        .humanoidArmor(material,
+                                net.minecraft.world.item.equipment.ArmorType.CHESTPLATE)));
+    }
+
+    /** Twilight Forest-style zombie scepter: summons three zombie minions. */
+    private static Item zombieScepter(String name) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new SpellItem(new Item.Properties().setId(key).stacksTo(1), 25) {
+                    @Override
+                    protected void cast(net.minecraft.server.level.ServerPlayer caster) {
+                        Abilities.summonZombies(caster,
+                                (net.minecraft.server.level.ServerLevel) caster.level());
+                    }
+                });
     }
 
     /** Twilight Forest-style Lich drop: reusable scepter that casts lightning. */

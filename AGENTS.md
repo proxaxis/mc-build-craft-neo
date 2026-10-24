@@ -152,3 +152,19 @@ Neo Builder MOD for Minecraft Fabric servers.
 - スロットindex: 0-8=ホットバー (selected=0 が mainhand 装備と共有)、9+=メイン
 - 実クライアントの openMenu 検証: プレイヤーが落下すると stillValid 距離超過で即クローズする → tp先の足元にブロック (fill ~ ~-1 ~) を敷くこと。「moved too quickly」「standing on air」ログが兆候
 - boss damage 検証: RCON の `@e[limit=1]` は実行地点 (ワールドスポーン) からの近距離順 → `execute positioned X Y Z run damage @e[distance=..N]` で対象を限定すること
+
+## 追加実装 (commit 623c234 以降)
+
+- **色付き絶縁ワイヤ** (ProjectRed近似): `insulated_wire_red/green/blue`。`InsulatedWireBlock` に color フィールドを追加し、同色 wire 間のみ -1 減衰で伝搬 (異色/無色とは絶縁)。素の insulated_wire は "none" 色として独立。テクスチャ=既存wireを ImageIO で色相変換。**検証済**: red鎖 14/12 減衰時に隣接 green/none は power=0、green鎖も独立して 14 伝搬
+- **IC2 パワードアーマー近似**: `nano_chestplate` (DIAMOND素材) / `quantum_chestplate` (NETHERITE素材) = humanoidArmor 装着可。`ArmorEffects` が20tick毎に全player+fakeの胸スロットを検査し nano=Resistance I、quantum=Resistance II+Fire Resistance を付与 (EU充電は近似せず常時効果)。`/bcn fake equip <name> <item>` で胸スロット装備。**検証済**: fake status fx=resistance / resistance+fire_resistance
+- **Twilight 深化**: `zombie_scepter` (25MPでゾンビミニオンx3召喚する非消耗SpellItem、twilightforest jarテクスチャ)、`naga_chestplate` (DIAMOND素材チェストプレート+shapedレシピ `S S/SSS/SSS` of naga_scale)。**検証済**: scepter使用でMP100→75+ミニオン3体、`recipe give` で naga_chestplate レシピ登録確認
+- **Cataclysm 遠距離攻撃+構造物**: BossManager が60tick毎に4-24ブロック内のplayerへ SmallFireball 発射 (`fireballVolley`)。`/bcn dungeon arena <pos>` = 半径6のblackstoneアリーナ (gilded上縁/中央祭壇/溶岩濠/東西入口)。**検証済**: overworld祭壇ボスが DevClient (距離8) に SmallFireball 発射→DevClient死亡 (実効確認)、arena の altar/blackstone/lava 配置
+- **Point Blank アタッチメント**: `ext_mag`/`scope` アイテム。`/bcn gun attach <player> <ext_mag|scope>` が手持ち銃に適用 (invから1個消費、CUSTOM_DATA `bonus`/`scope`)。ext_mag=空マガジン時に予備マガジン自動交換 (dmgリセット)、scope=弾速8.0/散布0.1/威力x1.25。**検証済**: smg+ext_mag で dmg39→use→bonus消費dmg=1で再発射、scope:1b タグ確認
+- **ATM残高表示**: AtmMenu に DataSlot で `balance` 同期 (broadcastChanges、long→int clamp)、AtmScreen 右上に "Balance: N MD" 描画。**検証済**: Xvfbで "Balance: 777 MD" ライブ更新を確認
+
+## 検証ノート (追加2)
+
+- FakePlayer はエンティティセレクタ/エンティティリストに載らない → 装備検証用に `/bcn fake equip` (胸スロット) を追加。`fake status` の `fx=` でエフェクト確認可
+- DevClient が死亡すると attachment (MD等) はリセットされる (コピー未設定) — ATM検証等で生存が前提の値は死亡に注意
+- Xvfb の GUI クリックは `xdotool search --name Minecraft windowactivate` 後に mousemove+click。死亡画面のボタン位置は "Respawn"=中央上段、"Title Screen"=下段 (誤クリックで切断確認画面が出る → 右側 "Respawn" を押す)
+- ボス範囲攻撃の実機検証は DevClient を survival にして近接配置する (4-24ブロック)。fireball は飛翔時間が短いので実体検出は `kill @e[type=small_fireball]` の "Killed" 出力で確実に確認

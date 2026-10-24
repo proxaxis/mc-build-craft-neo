@@ -27,5 +27,7 @@ public class AtmScreen extends AbstractContainerScreen<AtmMenu> {
             g.fill(sx, sy, sx + 18, sy + 18, 0xFF4A6A5A);
         }
         g.text(font, title, leftPos + 8, topPos + 6, 0xFFE0FFD0);
+        g.text(font, Component.literal("Balance: " + menu.balance() + " MD"),
+                leftPos + 80, topPos + 6, 0xFFFFD070);
     }
 }

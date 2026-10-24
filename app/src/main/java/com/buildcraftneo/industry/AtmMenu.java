@@ -21,6 +21,9 @@ public class AtmMenu extends AbstractContainerMenu {
 
     private final Container depositInv;
     private final net.minecraft.core.BlockPos pos;
+    private final Player owner;
+    private final net.minecraft.world.inventory.DataSlot balance =
+            net.minecraft.world.inventory.DataSlot.standalone();
 
     /** MenuSupplier constructor (client side). */
     public AtmMenu(int id, Inventory inv) {
@@ -32,14 +35,29 @@ public class AtmMenu extends AbstractContainerMenu {
         super(BCNMenus.ATM, id);
         this.depositInv = depositInv;
         this.pos = pos;
+        this.owner = inv.player;
         for (int i = 0; i < DEPOSIT_SLOTS; i++) {
             addSlot(new Slot(depositInv, i, 8 + i * 18, 20));
         }
         addStandardInventorySlots(inv, 8, 20 + 18 + 14);
+        addDataSlot(balance);
     }
 
     public int depositSlots() {
         return DEPOSIT_SLOTS;
+    }
+
+    /** Synced MD balance (clamped to int for the client). */
+    public int balance() {
+        return balance.get();
+    }
+
+    @Override
+    public void broadcastChanges() {
+        super.broadcastChanges();
+        if (owner instanceof net.minecraft.server.level.ServerPlayer sp) {
+            balance.set((int) Math.min(Profiles.md(sp), Integer.MAX_VALUE));
+        }
     }
 
     @Override

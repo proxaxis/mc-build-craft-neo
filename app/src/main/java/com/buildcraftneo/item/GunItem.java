@@ -40,28 +40,38 @@ public class GunItem extends Item {
         if (!(player instanceof ServerPlayer sp)) return InteractionResult.PASS;
         ItemStack stack = player.getItemInHand(hand);
         if (stack.getDamageValue() >= stack.getMaxDamage() - 1) {
-            if (tryReload(sp, stack)) {
+            int bonus = bonusMags(stack);
+            if (bonus > 0) {
+                // extended magazine: swap to the next stored magazine
+                setBonusMags(stack, bonus - 1);
+                stack.setDamageValue(0);
+                sp.sendSystemMessage(Component.literal(
+                        "[BCN] 拡張マガジンを交換 (残り " + (bonus - 1) + ")"));
+                player.getCooldowns().addCooldown(stack, 15);
+            } else if (tryReload(sp, stack)) {
                 sp.sendSystemMessage(Component.literal("[BCN] リロードしました"));
                 player.getCooldowns().addCooldown(stack, 20);
                 return InteractionResult.SUCCESS_SERVER;
+            } else {
+                sp.sendSystemMessage(Component.literal(
+                        "[BCN] マガジンが空です (弾薬が必要です)"));
+                return InteractionResult.FAIL;
             }
-            sp.sendSystemMessage(Component.literal(
-                    "[BCN] マガジンが空です (弾薬が必要です)"));
-            return InteractionResult.FAIL;
         }
         String rounds = roundsLoaded(stack);
+        boolean scoped = hasScope(stack);
         Vec3 look = player.getLookAngle();
         for (int i = 0; i < pellets; i++) {
             Arrow bullet = new Arrow(sp.level(), sp,
                     new ItemStack(Items.ARROW), stack);
             bullet.setPos(player.getX() + look.x, player.getEyeY() + look.y, player.getZ() + look.z);
-            bullet.shoot(look.x, look.y, look.z, 5.0f, pellets > 1 ? 6.0f : 1.0f);
+            bullet.shoot(look.x, look.y, look.z, scoped ? 8.0f : 5.0f,
+                    pellets > 1 ? 6.0f : (scoped ? 0.1f : 1.0f));
+            double dmg = rounds.equals("ap") ? damage * 1.5 : damage;
+            if (scoped) dmg *= 1.25;   // scope attachment: +25% damage
+            bullet.setBaseDamage(dmg);
             if (rounds.equals("ap")) {
-                // armor-piercing: +50% damage and critical-hit bonus
-                bullet.setBaseDamage(damage * 1.5);
                 bullet.setCritArrow(true);
-            } else {
-                bullet.setBaseDamage(damage);
             }
             if (rounds.equals("inc")) {
                 // incendiary: flaming bullet ignites the target
@@ -79,6 +89,30 @@ public class GunItem extends Item {
     private static String roundsLoaded(ItemStack stack) {
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
         return data == null ? "" : data.copyTag().getStringOr("rounds", "");
+    }
+
+    /** Extra magazines stored by the ext_mag attachment. */
+    public static int bonusMags(ItemStack stack) {
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data == null ? 0 : data.copyTag().getIntOr("bonus", 0);
+    }
+
+    public static void setBonusMags(ItemStack stack, int count) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, t -> {
+            if (count <= 0) t.remove("bonus");
+            else t.putInt("bonus", count);
+        });
+    }
+
+    /** Scope attachment marker: +25% damage, higher velocity, tighter spread. */
+    public static boolean hasScope(ItemStack stack) {
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data != null && data.copyTag().getBooleanOr("scope", false);
+    }
+
+    public static void setScope(ItemStack stack) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack,
+                t -> t.putBoolean("scope", true));
     }
 
     /** Consume one ammo item from the inventory and refill the magazine. */

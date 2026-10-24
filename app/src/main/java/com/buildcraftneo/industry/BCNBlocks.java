@@ -51,6 +51,9 @@ public final class BCNBlocks {
     public static Block COMPRESSOR;
     public static Block URANIUM_ORE;
     public static Block INSULATED_WIRE;
+    public static Block INSULATED_WIRE_RED;
+    public static Block INSULATED_WIRE_GREEN;
+    public static Block INSULATED_WIRE_BLUE;
 
     public static void register() {
         STIRLING_ENGINE = machine("stirling_engine", StirlingEngineBlockEntity::new);
@@ -95,9 +98,19 @@ public final class BCNBlocks {
                 BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.STONE)
                         .requiresCorrectToolForDrops());
         INSULATED_WIRE = block("insulated_wire", InsulatedWireBlock::new,
-                BlockBehaviour.Properties.of().strength(0.5f).sound(SoundType.STONE)
-                        // non-conductor: direct signals in must not leak out as weak power
-                        .isRedstoneConductor((state, level, pos) -> false));
+                wireProps());
+        INSULATED_WIRE_RED = block("insulated_wire_red",
+                p -> new InsulatedWireBlock(p, "red"), wireProps());
+        INSULATED_WIRE_GREEN = block("insulated_wire_green",
+                p -> new InsulatedWireBlock(p, "green"), wireProps());
+        INSULATED_WIRE_BLUE = block("insulated_wire_blue",
+                p -> new InsulatedWireBlock(p, "blue"), wireProps());
+    }
+
+    private static BlockBehaviour.Properties wireProps() {
+        // non-conductor: direct signals in must not leak out as weak power
+        return BlockBehaviour.Properties.of().strength(0.5f).sound(SoundType.STONE)
+                .isRedstoneConductor((state, level, pos) -> false);
     }
 
     private static Block block(String name,

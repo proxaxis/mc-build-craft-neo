@@ -104,5 +104,17 @@
   "item.buildcraftneo.ap_ammo": "Armor-Piercing Ammo",
   "item.buildcraftneo.inc_ammo": "Incendiary Ammo",
   "item.buildcraftneo.naga_scale": "Naga Scale",
-  "item.buildcraftneo.lich_scepter": "Scepter of Twilight"
+  "item.buildcraftneo.lich_scepter": "Scepter of Twilight",
+  "block.buildcraftneo.insulated_wire_red": "Insulated Wire (Red)",
+  "item.buildcraftneo.insulated_wire_red": "Insulated Wire (Red)",
+  "block.buildcraftneo.insulated_wire_green": "Insulated Wire (Green)",
+  "item.buildcraftneo.insulated_wire_green": "Insulated Wire (Green)",
+  "block.buildcraftneo.insulated_wire_blue": "Insulated Wire (Blue)",
+  "item.buildcraftneo.insulated_wire_blue": "Insulated Wire (Blue)",
+  "item.buildcraftneo.zombie_scepter": "Zombie Scepter",
+  "item.buildcraftneo.naga_chestplate": "Naga Chestplate",
+  "item.buildcraftneo.nano_chestplate": "NanoSuit Chestplate",
+  "item.buildcraftneo.quantum_chestplate": "QuantumSuit Chestplate",
+  "item.buildcraftneo.ext_mag": "Extended Magazine",
+  "item.buildcraftneo.scope": "ACOG Scope"
 }

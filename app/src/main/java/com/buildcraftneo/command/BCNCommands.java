@@ -163,10 +163,17 @@ public final class BCNCommands {
                                 .executes(BCNCommands::dungeonMaze)))
                         .then(Commands.literal("tower").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
-                                .executes(BCNCommands::dungeonTower))))
+                                .executes(BCNCommands::dungeonTower)))
+                        .then(Commands.literal("arena").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .executes(BCNCommands::dungeonArena))))
                 .then(Commands.literal("lock").then(Commands.argument("player", StringArgumentType.word())
                         .then(Commands.argument("slot", IntegerArgumentType.integer(0))
                                 .executes(BCNCommands::lockSlot))))
+                .then(Commands.literal("gun")
+                        .then(Commands.literal("attach").then(Commands.argument("player", StringArgumentType.word())
+                                .then(Commands.argument("attachment", StringArgumentType.word())
+                                        .executes(BCNCommands::gunAttach)))))
                 .then(Commands.literal("fake")
                         .then(Commands.literal("list").executes(BCNCommands::fakeList))
                         .then(Commands.literal("spawn").then(Commands.argument("name", StringArgumentType.word())
@@ -182,6 +189,9 @@ public final class BCNCommands {
                         .then(Commands.literal("give").then(Commands.argument("name", StringArgumentType.word())
                                 .then(Commands.argument("item", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
                                         .executes(BCNCommands::fakeGive))))
+                        .then(Commands.literal("equip").then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("item", net.minecraft.commands.arguments.item.ItemArgument.item(ctx))
+                                        .executes(BCNCommands::fakeEquip))))
                         .then(Commands.literal("use").then(Commands.argument("name", StringArgumentType.word())
                                 .executes(BCNCommands::fakeUse)))
                         .then(Commands.literal("deposit").then(Commands.argument("name", StringArgumentType.word())
@@ -500,6 +510,18 @@ public final class BCNCommands {
         return 1;
     }
 
+    /** Equip an item into the fake's chest armor slot (armor-effect testing). */
+    private static int fakeEquip(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        var input = net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "item");
+        ItemStack stack = input.createItemStack(1);
+        p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, stack);
+        tell(ctx, "equipped " + stack.getHoverName().getString() + " on "
+                + p.getName().getString());
+        return 1;
+    }
+
     private static int fakeUse(CommandContext<CommandSourceStack> ctx) {
         ServerPlayer p = fake(ctx);
         if (p == null) return 0;
@@ -635,6 +657,54 @@ public final class BCNCommands {
         var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
         com.buildcraftneo.dim.Dungeon.tower(ctx.getSource().getLevel(), pos);
         tell(ctx, "tower generated at " + pos.toShortString());
+        return 1;
+    }
+
+    /** Attach a Point Blank-style attachment item (ext_mag/scope) to the held gun. */
+    private static int gunAttach(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer p = resolvePlayer(ctx, StringArgumentType.getString(ctx, "player"));
+        if (p == null) {
+            tell(ctx, "player/fake not found");
+            return 0;
+        }
+        ItemStack held = p.getMainHandItem();
+        if (!(held.getItem() instanceof com.buildcraftneo.item.GunItem)) {
+            tell(ctx, "not holding a gun");
+            return 0;
+        }
+        String att = StringArgumentType.getString(ctx, "attachment");
+        net.minecraft.world.item.Item need = switch (att) {
+            case "ext_mag" -> com.buildcraftneo.item.BCNItems.EXT_MAG;
+            case "scope" -> com.buildcraftneo.item.BCNItems.SCOPE;
+            default -> null;
+        };
+        if (need == null) {
+            tell(ctx, "unknown attachment " + att + " (ext_mag|scope)");
+            return 0;
+        }
+        var inv = p.getInventory();
+        int slot = inv.findSlotMatchingItem(new ItemStack(need));
+        if (slot < 0) {
+            tell(ctx, "attachment item not in inventory");
+            return 0;
+        }
+        inv.removeItem(slot, 1);
+        if (att.equals("ext_mag")) {
+            com.buildcraftneo.item.GunItem.setBonusMags(held,
+                    com.buildcraftneo.item.GunItem.bonusMags(held) + 1);
+            tell(ctx, "ext_mag attached (bonus mags="
+                    + com.buildcraftneo.item.GunItem.bonusMags(held) + ")");
+        } else {
+            com.buildcraftneo.item.GunItem.setScope(held);
+            tell(ctx, "scope attached");
+        }
+        return 1;
+    }
+
+    private static int dungeonArena(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        com.buildcraftneo.dim.Dungeon.arena(ctx.getSource().getLevel(), pos);
+        tell(ctx, "arena generated at " + pos.toShortString());
         return 1;
     }
 
