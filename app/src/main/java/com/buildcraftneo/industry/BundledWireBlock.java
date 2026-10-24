@@ -103,7 +103,8 @@ public class BundledWireBlock extends Block implements EntityBlock {
                 BlockPos np = p.relative(d);
                 BlockState nb = level.getBlockState(np);
                 if (nb.getBlock() instanceof BusConverterBlock
-                        || nb.getBlock() instanceof BusTransceiverBlock) {
+                        || nb.getBlock() instanceof BusTransceiverBlock
+                        || nb.getBlock() instanceof BusRandomizerBlock) {
                     level.scheduleTick(np, nb.getBlock(), 2);
                 }
             }
@@ -136,6 +137,9 @@ public class BundledWireBlock extends Block implements EntityBlock {
             } else if (ns.getBlock() instanceof BusTransceiverBlock tr) {
                 // gated one-way relay: only its front face injects
                 mask |= tr.injectedMask(level, nb, ns, dir.getOpposite());
+            } else if (ns.getBlock() instanceof BusRandomizerBlock rnd) {
+                // random channel pick: only its front face injects
+                mask |= rnd.injectedMask(level, nb, ns, dir.getOpposite());
             } else {
                 int sig = Math.max(level.getSignal(nb, dir), level.getDirectSignal(nb, dir));
                 if (sig > 0) mask |= InsulatedWireBlock.bitFor("none");

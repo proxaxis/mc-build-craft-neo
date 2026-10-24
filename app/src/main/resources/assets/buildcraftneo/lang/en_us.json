@@ -166,5 +166,9 @@
   "block.buildcraftneo.charge_pad": "Charge Pad",
   "item.buildcraftneo.electric_drill": "Electric Drill",
   "item.buildcraftneo.chainsaw": "Chainsaw",
-  "item.buildcraftneo.grenade": "Grenade"
+  "item.buildcraftneo.grenade": "Grenade",
+  "block.buildcraftneo.copper_cable": "Copper Cable",
+  "block.buildcraftneo.hv_cable": "HV Cable",
+  "block.buildcraftneo.bus_randomizer": "Bus Randomizer",
+  "item.buildcraftneo.impact_grenade": "Impact Grenade"
 }

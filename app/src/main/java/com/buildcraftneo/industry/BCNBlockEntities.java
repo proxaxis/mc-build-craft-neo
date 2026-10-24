@@ -32,6 +32,8 @@ public final class BCNBlockEntities {
     public static BlockEntityType<BundledWireBlockEntity> BUNDLED_WIRE;
     public static BlockEntityType<BatBoxBlockEntity> BAT_BOX;
     public static BlockEntityType<ChargePadBlockEntity> CHARGE_PAD;
+    public static BlockEntityType<EuCableBlockEntity> EU_CABLE;
+    public static BlockEntityType<BusRandomizerBlockEntity> BUS_RANDOMIZER;
 
     public static void register() {
         STIRLING_ENGINE = type("stirling_engine", StirlingEngineBlockEntity::new, BCNBlocks.STIRLING_ENGINE);
@@ -59,6 +61,10 @@ public final class BCNBlockEntities {
                 BCNBlocks.BUNDLED_WIRE);
         BAT_BOX = type("bat_box", BatBoxBlockEntity::new, BCNBlocks.BAT_BOX);
         CHARGE_PAD = type("charge_pad", ChargePadBlockEntity::new, BCNBlocks.CHARGE_PAD);
+        EU_CABLE = type("eu_cable", EuCableBlockEntity::new,
+                BCNBlocks.COPPER_CABLE, BCNBlocks.HV_CABLE);
+        BUS_RANDOMIZER = type("bus_randomizer", BusRandomizerBlockEntity::new,
+                BCNBlocks.BUS_RANDOMIZER);
     }
 
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> type(

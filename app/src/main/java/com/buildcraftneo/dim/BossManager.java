@@ -147,6 +147,11 @@ public final class BossManager {
         if (hp < 0.6f && level.getGameTime() % 140 == 70) {
             fangRing(level, b);
         }
+        // thunder phase (<40% HP): call down a lightning bolt on the nearest
+        // player every 200 ticks, like the Monstrosity's storm attacks
+        if (hp < 0.4f && level.getGameTime() % 200 == 100) {
+            thunderCall(level, b);
+        }
         // phase 2 (<50% HP): summon two minions, once
         if (hp < 0.5f && (t.phaseFlags & 1) == 0) {
             t.phaseFlags |= 1;
@@ -243,6 +248,30 @@ public final class BossManager {
                     level, fx, target.getY(), fz, (float) angle, i, boss);
             level.addFreshEntity(fang);
         }
+    }
+
+    /**
+     * Cataclysm-style thunder phase: while below 40% HP the boss periodically
+     * calls a real lightning bolt down on the nearest player within range.
+     */
+    private static void thunderCall(ServerLevel level, LivingEntity boss) {
+        var box = boss.getBoundingBox().inflate(24.0);
+        var players = level.getEntitiesOfClass(
+                net.minecraft.server.level.ServerPlayer.class, box,
+                p -> p.isAlive() && !p.isSpectator());
+        if (players.isEmpty()) return;
+        var target = players.getFirst();
+        double best = target.distanceToSqr(boss);
+        for (var p : players) {
+            if (p.distanceToSqr(boss) < best) {
+                best = p.distanceToSqr(boss);
+                target = p;
+            }
+        }
+        var bolt = new net.minecraft.world.entity.LightningBolt(
+                net.minecraft.world.entity.EntityTypes.LIGHTNING_BOLT, level);
+        bolt.setPos(target.getX(), target.getY(), target.getZ());
+        level.addFreshEntity(bolt);
     }
 
     /** Cataclysm-style bullet phase: a ring of fireballs in every direction. */

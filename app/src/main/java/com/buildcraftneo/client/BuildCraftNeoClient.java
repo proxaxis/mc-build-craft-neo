@@ -26,6 +26,9 @@ public class BuildCraftNeoClient implements ClientModInitializer {
                 .registerGlobalReceiver(
                         com.buildcraftneo.net.ShopHistoryPayload.TYPE,
                         (payload, context) -> ShopScreen.onHistory(payload.lines()));
+        net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry
+                .register(com.buildcraftneo.entity.BCNEntities.GRENADE,
+                        net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
         MenuScreens.register(BCNMenus.SHOP, ShopScreen::new);
         MenuScreens.register(BCNMenus.ATM, AtmScreen::new);
         MenuScreens.register(BCNMenus.MACHINE, MachineScreen::new);

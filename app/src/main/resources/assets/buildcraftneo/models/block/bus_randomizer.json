@@ -1,0 +1,1 @@
+{"parent":"minecraft:block/cube","textures":{"down":"buildcraftneo:block/bus_randomizer","up":"buildcraftneo:block/bus_randomizer_out","north":"buildcraftneo:block/bus_randomizer_out","south":"buildcraftneo:block/bus_randomizer","east":"buildcraftneo:block/bus_randomizer","west":"buildcraftneo:block/bus_randomizer","particle":"buildcraftneo:block/bus_randomizer"}}

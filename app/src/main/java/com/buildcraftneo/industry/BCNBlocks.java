@@ -67,6 +67,9 @@ public final class BCNBlocks {
     public static Block BUS_CONVERTER;
     public static Block BUS_TRANSCEIVER;
     public static Block CHARGE_PAD;
+    public static Block COPPER_CABLE;
+    public static Block HV_CABLE;
+    public static Block BUS_RANDOMIZER;
 
     /** Extra insulated-wire colors by color name (channels 4-15). */
     public static final java.util.Map<String, Block> INSULATED_WIRES =
@@ -153,6 +156,13 @@ public final class BCNBlocks {
                 BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE)
                         .isRedstoneConductor((state, level, pos) -> false));
         CHARGE_PAD = machine("charge_pad", ChargePadBlockEntity::new);
+        COPPER_CABLE = block("copper_cable",
+                p -> new EuCableBlock(p, 256, 4), wireProps());
+        HV_CABLE = block("hv_cable",
+                p -> new EuCableBlock(p, 4096, 64), wireProps());
+        BUS_RANDOMIZER = block("bus_randomizer", BusRandomizerBlock::new,
+                BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE)
+                        .isRedstoneConductor((state, level, pos) -> false));
     }
 
     private static BlockBehaviour.Properties wireProps() {

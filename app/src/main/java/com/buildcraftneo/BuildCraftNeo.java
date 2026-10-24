@@ -52,6 +52,7 @@ public class BuildCraftNeo implements ModInitializer {
         BCNItems.register();
         BCNBlocks.register();
         BCNBlockEntities.register();
+        com.buildcraftneo.entity.BCNEntities.register();
         com.buildcraftneo.industry.BCNMenus.register();
         Restrictions.register();
         JobEffects.register();

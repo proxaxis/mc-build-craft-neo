@@ -22,7 +22,7 @@ import net.minecraft.world.phys.AABB;
  * FakePlayers are not part of the level entity list, so the tick also scans
  * {@link TestFakes#all()} to keep the block verifiable from RCON.
  */
-public class ChargePadBlockEntity extends MachineBlockEntity {
+public class ChargePadBlockEntity extends MachineBlockEntity implements EuStorage {
     public static final int EU_CAPACITY = 40_000;
     public static final int CHARGE_RATE = 200;
     private static final EquipmentSlot[] SLOTS = {
@@ -36,6 +36,33 @@ public class ChargePadBlockEntity extends MachineBlockEntity {
     @Override
     public long mjCapacity() {
         return EU_CAPACITY;
+    }
+
+    // ---- EuStorage (cable network endpoint) ----
+
+    @Override
+    public long euStored() {
+        return mj;
+    }
+
+    @Override
+    public long euCapacity() {
+        return EU_CAPACITY;
+    }
+
+    @Override
+    public long insertEu(long amount) {
+        return amount - accept(amount);
+    }
+
+    @Override
+    public long drainEu(long amount) {
+        long taken = Math.min(Math.max(0, amount), mj);
+        if (taken > 0) {
+            mj -= taken;
+            setChanged();
+        }
+        return taken;
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, ChargePadBlockEntity self) {

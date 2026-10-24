@@ -131,16 +131,16 @@ Neo Builder MOD for Minecraft Fabric servers.
 | Paladins & Priests | ✅ paladin/priest職+ability_barrier/consecrate+paladin_mace/holy_staff |
 | Archers | ✅ marksman職+ability_volley+marksman_bow (既存archer職+rain_of_arrows等も) |
 | Twilight Forest | ✅ twilight次元+DimBuffs+祭壇ボス3種+進行ゲート+迷路/塔+ボス固有ドロップ(naga_scale/lich_scepter) |
-| Cataclysm | ✅ overworld祭壇→Nether Monstrosity + フェーズ攻撃(AoE/ミニオン/バースト) |
+| Cataclysm | ✅ overworld祭壇→Nether Monstrosity + フェーズ攻撃(AoE/弾幕/牙/召雷/ミニオン/バースト/メテオ) |
 | The Aether | ✅ skyreach次元+ambrosium/zanite鉱石+gravitite浮遊+skyroot+parachute |
 | GvC | ✅ `/bcn disaster soldiers` 兵士レイド (Vindicator/Pillager/重装Zombie近似) |
 | HMG | ✅ 銃系で近似 (車両はクライアント運転制御のため未実施) |
 | BuildCraft | ✅ engine/quarry/item_pipe/teleport_pipe+MJ系+動的パイプ描画 |
 | Logistics Pipes | ✅ request/supplier/sorting/crafting_pipe + PipeNetwork共有BFS |
 | Additional Pipes | ✅ teleport_pipe次元横断チャネル0-7 (both/send/receive) |
-| IndustrialCraft 2 | ✅ macerator+粉砕dust+compressor+uranium鉱石→ingot→reactor燃料+核メルトダウン (EU体系はMJ近似) |
-| ProjectRed | ✅ timer+logic_gate 10モード(not/or/and/xor/nand/nor/xnor/rs_latch/buffer/d_latch)+lamp+insulated_wire。bundled wireは未実施 |
-| Vic's Point Blank | ✅ 銃6種+マガジン耐久+弾種3種(通常/徹甲/焼夷)リロード+pellet (アニメーション/アタッチメントは近似なし) |
+| IndustrialCraft 2 | ✅ macerator+粉砕dust+compressor+uranium鉱石→ingot→reactor燃料+核メルトダウン+EU体系 (bat_box/charge_pad/copper&hv cable/EuChargeable工具/EU装甲。MJと1:1近似) |
+| ProjectRed | ✅ timer+logic_gate 10モード+lamp+insulated_wire 16色+bundled_wire 16ch+bus_converter/bus_transceiver/bus_randomizer+frame 3種+frame_motor |
+| Vic's Point Blank | ✅ 銃6種+マガジン耐久+弾種3種リロード+pellet+scope+suppressor+ADS近似+grenade(時限/着発) (アニメーションは近似なし) |
 | Lightman's Currency | ✅ 6種コイン+MD+shop+auction+ATM(GUI付) |
 
 ## 検証ノート (追加)
@@ -237,3 +237,19 @@ Neo Builder MOD for Minecraft Fabric servers.
 - **`@e[limit=1]` はワールドスポーンからの近距離順**: 複数同名エンティティがいるとき data get は `execute positioned X Y Z as @e[...distance=..N]` で絞る
 - **投擲物/弾は非tick領域で凍結する**: TNT が z=48 (スポーンチャンク0-47の外) に着弾すると fuse が減らず残存。検証はtick領域内で
 - **EvokerFangs の寿命は約22t**: spawn 直後に warmup→ダメージ→消滅するので検出はポーリング必須 (0.5s間隔で約1.5s検出可能)
+
+## 追加実装 (commit c379549 以降)
+
+- **IC2 EUケーブル網**: `EuStorage` IF (ブロック側EU貯蔵: euStored/euCapacity/insertEu/drainEu)。BatBox/ChargePad が実装 (内部は mj 1:1)。`copper_cable` (256EU/10t・loss4) / `hv_cable` (4096EU/10t・loss64): `EuCableBlockEntity` が10t毎にネットワーク (≤256ノードBFS) 内の最若い pos のみを駆動し、隣接 EuStorage の最満→最空へ `min(rate, gap/2)` を転送 (loss控除、混合網は最小rate/最大loss)。**検証済**: bat_box A=2000 → copper 3本 → B=990まで平衡化 (loss≈20)、hv は4回転送で収束 (loss≈256)
+- **ProjectRed bus_randomizer** (近似): FACING=出力バス、背面=入力バス、側面4面=アナログ制御。制御立上り毎に入力 mask からランダム1chを選び `BusRandomizerBlockEntity.outMask` に保持→出力へ注入。制御OFFで0、選択chが入力から消えても再抽選。`BundledWireBlock.localInput` + wake リストに組込済。**検証済**: 入力mask=10 (ch1+ch3) で出力が 2/8 の単一bitのみ出現、制御OFF→0、入力側mask不変
+- **装甲EU充電モデル**: `EuArmorItem` (EuChargeable実装)。nano系=100k EU、quantum系=1M EU。`ArmorEffects` は各効果更新 (20t毎) にその部位から 40EU を `drainEu` — 残量不足なら効果付与なし。charge_pad が装備スロット経由で装甲も充電 (EuChargeableなので既存ロジックで動作)。**検証済**: 無充電 nano_chestplate → fx=-、eu=100000 → fx=resistance、pad 5000→0 で装甲充電
+- **Point Blank impact_grenade**: `GrenadeEntity` (`ThrowableItemProjectile`、着弾即爆発 power2.5 `ExplosionInteraction.TNT`) + `BCNEntities` 登録 (`EntityType.Builder.build(ResourceKey)`) + クライアントは `EntityRendererRegistry`→`ThrownItemRenderer`。use→`shootFromRotation` 投擲。**検証済**: `type=buildcraftneo:grenade` 検出、壁面glassを着発で即破壊 (power2.5なのでstoneは残存=妥当)
+- **Cataclysm 召雷フェーズ**: HP<40%で200tick毎に `thunderCall` — 24ブロック内の最近プレイヤー位置へ `LightningBolt`。**検証済**: HP135/350で `type=lightning_bolt` をポーリング検出
+
+## 検証ノート (追加7)
+
+- **DevClient の右クリックが効かない原因2点**: (1) 手に固有use持ちアイテム (EU工具/武器) を持っていると item use が先に処理される → `item replace entity DevClient hotbar.0 with air` で空にする (2) **spawn protection**: ワールドスポーン近辺は非opのクライアントがブロック操作不可 ("X,Y,Z is under spawn protection" が画面に出る) → `op DevClient` 必須
+- **26.3 のエンティティAPI**: `EntityType` の定数は `EntityTypes`(複数形)、`ThrowableItemProjectile` は `entity.projectile.throwableitemprojectile` パッケージ、`EntityType.Builder.build` は `ResourceKey` 引数、爆発は `Level.ExplosionInteraction` enum。`EntityRenderers.register` は無い → Fabric `EntityRendererRegistry`
+- **ボス召喚の重複防止**: altar は半径32内に追跡中ボスがいると "already nearby" で拒否。古い `bcn_boss` タグ付きボスが残っていると新規召喚できない → `kill @e[tag=bcn_boss]` で掃除
+- **tp に回転引数を渡す場合**: 負の pitch は rcon-cli がフラグと誤認する → -15 は 345 と書く
+- **`data get block` で bundled_wire の mask が読める**: BE NBT (`mask: N`) → チャネル検証に便利

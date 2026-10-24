@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * into it like any other consumer (we treat stored MJ as EU 1:1), and any
  * chargeable item placed into its two slots is recharged at up to 200 EU/t.
  */
-public class BatBoxBlockEntity extends MachineBlockEntity {
+public class BatBoxBlockEntity extends MachineBlockEntity implements EuStorage {
     public static final int EU_CAPACITY = 40_000;
     public static final int CHARGE_RATE = 200;
 
@@ -24,6 +24,33 @@ public class BatBoxBlockEntity extends MachineBlockEntity {
     @Override
     public long mjCapacity() {
         return EU_CAPACITY;
+    }
+
+    // ---- EuStorage (cable network endpoint) ----
+
+    @Override
+    public long euStored() {
+        return mj;
+    }
+
+    @Override
+    public long euCapacity() {
+        return EU_CAPACITY;
+    }
+
+    @Override
+    public long insertEu(long amount) {
+        return amount - accept(amount);
+    }
+
+    @Override
+    public long drainEu(long amount) {
+        long taken = Math.min(Math.max(0, amount), mj);
+        if (taken > 0) {
+            mj -= taken;
+            setChanged();
+        }
+        return taken;
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, BatBoxBlockEntity self) {
