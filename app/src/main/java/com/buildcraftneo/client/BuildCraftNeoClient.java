@@ -23,6 +23,7 @@ public class BuildCraftNeoClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         MenuScreens.register(BCNMenus.SHOP, ShopScreen::new);
+        MenuScreens.register(BCNMenus.ATM, AtmScreen::new);
         ModelLoadingPlugin.register(context -> context.modifyBlockModelAfterBake()
                 .register((model, ctx) -> {
                     Identifier tex = PIPE_TEXTURES.get(ctx.state().getBlock());

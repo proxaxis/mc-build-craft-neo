@@ -819,20 +819,31 @@ public final class BCNCommands {
     private static int shopMenu(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
         var be = ctx.getSource().getLevel().getBlockEntity(pos);
-        if (!(be instanceof com.buildcraftneo.industry.ShopBlockEntity shop)) {
-            ctx.getSource().sendFailure(Component.literal("no shop at " + pos.toShortString()));
-            return 0;
-        }
         ServerPlayer p = resolvePlayer(ctx, StringArgumentType.getString(ctx, "player"));
         if (p == null) {
             ctx.getSource().sendFailure(Component.literal("no player/fake"));
             return 0;
         }
-        var result = p.openMenu(new net.minecraft.world.SimpleMenuProvider(
-                (id, inv, pl) -> new com.buildcraftneo.industry.ShopMenu(id, inv, shop,
-                        net.minecraft.world.inventory.ContainerLevelAccess.create(
-                                shop.getLevel(), shop.getBlockPos())),
-                Component.literal("Shop")));
+        net.minecraft.world.MenuProvider provider;
+        if (be instanceof com.buildcraftneo.industry.ShopBlockEntity shop) {
+            provider = new net.minecraft.world.SimpleMenuProvider(
+                    (id, inv, pl) -> new com.buildcraftneo.industry.ShopMenu(id, inv, shop,
+                            net.minecraft.world.inventory.ContainerLevelAccess.create(
+                                    shop.getLevel(), shop.getBlockPos())),
+                    Component.literal("Shop"));
+        } else if (be instanceof com.buildcraftneo.industry.AtmBlockEntity atm) {
+            provider = new net.minecraft.world.SimpleMenuProvider(
+                    (id, inv, pl) -> new com.buildcraftneo.industry.AtmMenu(id, inv,
+                            new net.minecraft.world.SimpleContainer(
+                                    com.buildcraftneo.industry.AtmMenu.DEPOSIT_SLOTS),
+                            atm.getBlockPos()),
+                    Component.literal("ATM"));
+        } else {
+            ctx.getSource().sendFailure(Component.literal(
+                    "no menu block at " + pos.toShortString()));
+            return 0;
+        }
+        var result = p.openMenu(provider);
         tell(ctx, "openMenu -> " + (result.isPresent() ? "containerId=" + result.getAsInt() : "refused"));
         return result.isPresent() ? 1 : 0;
     }
@@ -938,7 +949,7 @@ public final class BCNCommands {
             return 0;
         }
         boolean ok = altar.summonBoss(ctx.getSource().getLevel());
-        tell(ctx, ok ? "boss summoned" : "a boss is already nearby");
+        tell(ctx, ok ? "boss summoned" : "summon refused: " + altar.status());
         return ok ? 1 : 0;
     }
 
@@ -949,15 +960,23 @@ public final class BCNCommands {
         if (p == null) return 0;
         var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
         var be = ctx.getSource().getLevel().getBlockEntity(pos);
-        if (!(be instanceof com.buildcraftneo.industry.ShopBlockEntity shop)) {
-            ctx.getSource().sendFailure(Component.literal("no shop at " + pos.toShortString()));
-            return 0;
-        }
         // FakePlayer.openMenu is a stub (returns empty) — instantiate the menu
         // directly and drive it via clicked(), which exercises the same logic.
-        var menu = new com.buildcraftneo.industry.ShopMenu(1, p.getInventory(), shop,
-                net.minecraft.world.inventory.ContainerLevelAccess.create(
-                        shop.getLevel(), shop.getBlockPos()));
+        net.minecraft.world.inventory.AbstractContainerMenu menu;
+        if (be instanceof com.buildcraftneo.industry.ShopBlockEntity shop) {
+            menu = new com.buildcraftneo.industry.ShopMenu(1, p.getInventory(), shop,
+                    net.minecraft.world.inventory.ContainerLevelAccess.create(
+                            shop.getLevel(), shop.getBlockPos()));
+        } else if (be instanceof com.buildcraftneo.industry.AtmBlockEntity atm) {
+            menu = new com.buildcraftneo.industry.AtmMenu(1, p.getInventory(),
+                    new net.minecraft.world.SimpleContainer(
+                            com.buildcraftneo.industry.AtmMenu.DEPOSIT_SLOTS),
+                    atm.getBlockPos());
+        } else {
+            ctx.getSource().sendFailure(Component.literal(
+                    "no menu block at " + pos.toShortString()));
+            return 0;
+        }
         OPEN_MENUS.put(p.getName().getString(), menu);
         tell(ctx, "menu=" + menu.getClass().getSimpleName()
                 + " slots=" + menu.slots.size()
@@ -1010,7 +1029,8 @@ public final class BCNCommands {
         return 1;
     }
 
-    private static final java.util.Map<String, com.buildcraftneo.industry.ShopMenu> OPEN_MENUS =
+    private static final java.util.Map<String,
+            net.minecraft.world.inventory.AbstractContainerMenu> OPEN_MENUS =
             new java.util.concurrent.ConcurrentHashMap<>();
 
     private static ServerPlayer player(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

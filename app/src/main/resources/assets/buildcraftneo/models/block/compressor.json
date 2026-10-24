@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/orientable", "textures": {"top": "buildcraftneo:block/compressor_top", "front": "buildcraftneo:block/compressor_front", "side": "buildcraftneo:block/compressor_leftrightback"}}

@@ -25,6 +25,7 @@ public final class BCNBlockEntities {
     public static BlockEntityType<SortingPipeBlockEntity> SORTING_PIPE;
     public static BlockEntityType<CraftingPipeBlockEntity> CRAFTING_PIPE;
     public static BlockEntityType<AtmBlockEntity> ATM;
+    public static BlockEntityType<CompressorBlockEntity> COMPRESSOR;
 
     public static void register() {
         STIRLING_ENGINE = type("stirling_engine", StirlingEngineBlockEntity::new, BCNBlocks.STIRLING_ENGINE);
@@ -43,6 +44,7 @@ public final class BCNBlockEntities {
         SORTING_PIPE = type("sorting_pipe", SortingPipeBlockEntity::new, BCNBlocks.SORTING_PIPE);
         CRAFTING_PIPE = type("crafting_pipe", CraftingPipeBlockEntity::new, BCNBlocks.CRAFTING_PIPE);
         ATM = type("atm", AtmBlockEntity::new, BCNBlocks.ATM);
+        COMPRESSOR = type("compressor", CompressorBlockEntity::new, BCNBlocks.COMPRESSOR);
     }
 
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> type(

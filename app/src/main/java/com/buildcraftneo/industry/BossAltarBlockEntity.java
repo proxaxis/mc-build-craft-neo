@@ -20,6 +20,7 @@ public class BossAltarBlockEntity extends MachineBlockEntity {
 
     private String lastBoss = "-";
     private int boss;
+    private int unlocked; // twilight progression: how many bosses may be summoned
 
     public BossAltarBlockEntity(BlockPos pos, BlockState state) {
         super(BCNBlockEntities.BOSS_ALTAR, pos, state, 0);
@@ -47,6 +48,13 @@ public class BossAltarBlockEntity extends MachineBlockEntity {
             return false;
         }
         String dim = level.dimension().identifier().toString();
+        boolean twilight = !dim.equals("buildcraftneo:skyreach")
+                && !dim.equals("minecraft:overworld");
+        // Twilight Forest-style progression: bosses unlock in order
+        if (twilight && boss > unlocked) {
+            lastBoss = "locked(defeat " + TWILIGHT_BOSSES[unlocked] + " first)";
+            return false;
+        }
         net.minecraft.world.entity.Mob boss = switch (dim) {
             case "buildcraftneo:skyreach" -> skyreachGuardian(level);
             case "minecraft:overworld" -> netherMonstrosity(level);
@@ -57,10 +65,17 @@ public class BossAltarBlockEntity extends MachineBlockEntity {
         boss.setPersistenceRequired();
         boss.addTag("bcn_boss");
         level.addFreshEntity(boss);
-        BossManager.track(boss, level.getServer());
+        BossManager.track(boss, level.getServer(),
+                twilight ? getBlockPos() : null, twilight ? this.boss : -1);
         lastBoss = boss.getUUID().toString().substring(0, 8);
         setChanged();
         return true;
+    }
+
+    /** Called when a tracked boss summoned from this altar dies. */
+    public void onBossKill(int bossIndex) {
+        unlocked = Math.min(Math.max(unlocked, bossIndex + 1), TWILIGHT_BOSSES.length - 1);
+        setChanged();
     }
 
     private net.minecraft.world.entity.Mob twilightBoss(ServerLevel level) {
@@ -151,18 +166,21 @@ public class BossAltarBlockEntity extends MachineBlockEntity {
 
     @Override
     public String status() {
-        return super.status() + " boss=" + TWILIGHT_BOSSES[boss] + " last=" + lastBoss;
+        return super.status() + " boss=" + TWILIGHT_BOSSES[boss] + " unlocked=" + unlocked
+                + " last=" + lastBoss;
     }
 
     @Override
     protected void saveAdditional(net.minecraft.world.level.storage.ValueOutput out) {
         super.saveAdditional(out);
         out.putInt("boss", boss);
+        out.putInt("unlocked", unlocked);
     }
 
     @Override
     protected void loadAdditional(net.minecraft.world.level.storage.ValueInput in) {
         super.loadAdditional(in);
         boss = in.getIntOr("boss", 0);
+        unlocked = in.getIntOr("unlocked", 0);
     }
 }

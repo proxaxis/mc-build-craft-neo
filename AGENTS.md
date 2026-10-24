@@ -100,6 +100,40 @@ Neo Builder MOD for Minecraft Fabric servers.
 - **新コマンド**: `/bcn fake giveinv <name> <item> <count>` (inventory投入)、`/bcn fake sneak <name> <bool>`、`/bcn fake dropslot`、上記 machine/lock/dungeon/disaster 系
 - クライアント: 動的パイプモデルに supplier/sorting/crafting を追加 (LPテクスチャ: pipe_supplier/pipe_basic/pipe_crafting、不透明化変換済み)
 
+## 追加実装 (commit e1419d0 以降)
+
+- **IC2深化**: `compressor` 機械 (300MJ+60t/処理、スロット0=入力,1-2=出力)。レシピ: uranium_ore→uranium_ingot (炉燃料チェーン完成)、coal_block x8→diamond、ingot x9→block 系(鉄/金/ダイヤ/エメラルド/ラピス/レッドストーン)、quartz x4→block、wheat x9→hay、clay x4→block、snowball x4→block。`uranium_ore` ブロック (IC2 jar テクスチャ、自壊ドロップ)。**検証済**: uranium_ore→uranium_ingot→reactor fuel=1579t、coal_block x8→diamond
+- **ProjectRed**: logic_gate mode 7 `rs_latch` (左=S set、右=R reset、set優先、latch状態永続化)。**検証済**: S点灯→入力除去後も保持、Rで消灯
+- **Cataclysm フェーズ**: BossManager が追跡ボスに攻撃フェーズを実装 — 80tick毎に半径5のAoEスマッシュ(6dmg+ノックバック)、HP<50%で "Monstrosity Minion" (WitherSkeleton+鉄剣) x2 召喚(1回)、HP<25%で半径8のバースト(12dmg+4s燃焼)。**検証済**: damage→HP50%でミニオン2体、AoEで隣接pigが死亡
+- **Twilight 進行ゲート**: boss_altar NBT `unlocked` (twilight次元のみ、ボスindex<=unlocked まで召喚可)。ボス討伐で `unlocked` が index+1 に解放 (BossManager が祭壇位置を追跡)。**検証済**: Lich選択→locked拒否、Knight討伐→unlocked=1→Naga召喚可
+- **ATM実GUI**: `AtmMenu` (9入金スロット+player inv、閉じるとコイン→MD変換、非コイン返却) + `AtmScreen` (クライアント)。atm右クリ=GUI、スニーク右クリ=500MD引出(従来通り)。`/bcn shop menu`/`fake menuopen` が atm も対応。**検証済**: fake menuopen→menuclick→menuclose で gold_coin x3→300MD、XvfbでAtmScreen描画確認
+
+## BASE_MOD_LIST 実装マトリクス (最終棚卸し)
+
+| MOD | 実装状況 |
+|---|---|
+| ItemLocks | ✅ `/bcn lock <player> <slot>` スロットスナップショット+10tick復元。Qキー抑止はクライアント制御のため近似 |
+| Player Skills | ✅ `xp` attachment + kill XP + `/bcn fake set xp` + status表示 |
+| Better Combat | ⚠️ 未実施 (クライアントアニメーション制御が本質) |
+| Simply Swords | ✅ 近接武器8種+右クリックパワー (PowerWeaponItem) |
+| Wall-Jump! | ⚠️ 未実施 (クライアント移動制御) |
+| Shield Expansion | ✅ ティア盾5種 (耐久120-800)。ジャストガード演出は近似なし |
+| Iron's Spells | ✅ スペル14種+MP+職業ゲート+spellbook(7スペル切替)+scroll4種。詠唱モーション/ツリーGUIは未実施 |
+| Paladins & Priests | ✅ paladin/priest職+ability_barrier/consecrate+paladin_mace/holy_staff |
+| Archers | ✅ marksman職+ability_volley+marksman_bow (既存archer職+rain_of_arrows等も) |
+| Twilight Forest | ✅ twilight次元+DimBuffs+祭壇ボス3種(Naga/Lich含む)+進行ゲート+迷路/塔構造 |
+| Cataclysm | ✅ overworld祭壇→Nether Monstrosity + フェーズ攻撃(AoE/ミニオン/バースト) |
+| The Aether | ✅ skyreach次元+ambrosium/zanite鉱石+gravitite浮遊+skyroot+parachute |
+| GvC | ✅ `/bcn disaster soldiers` 兵士レイド (Vindicator/Pillager/重装Zombie近似) |
+| HMG | ✅ 銃系で近似 (車両はクライアント運転制御のため未実施) |
+| BuildCraft | ✅ engine/quarry/item_pipe/teleport_pipe+MJ系+動的パイプ描画 |
+| Logistics Pipes | ✅ request/supplier/sorting/crafting_pipe + PipeNetwork共有BFS |
+| Additional Pipes | ✅ teleport_pipe次元横断チャネル0-7 (both/send/receive) |
+| IndustrialCraft 2 | ✅ macerator+粉砕dust+compressor+uranium鉱石→ingot→reactor燃料+核メルトダウン (EU体系はMJ近似) |
+| ProjectRed | ✅ timer+logic_gate 8モード(not/or/and/xor/nand/nor/xnor/rs_latch)+lamp。絶縁wire/bundledは未実施 |
+| Vic's Point Blank | ✅ 銃6種+マガジン耐久+ammoリロード+pellet (アニメーション/アタッチメントは近似なし) |
+| Lightman's Currency | ✅ 6種コイン+MD+shop+auction+ATM(GUI付) |
+
 ## 検証ノート (追加)
 
 - FakePlayer は `getPlayerList()` に含まれない → tick ベース強制処理 (ItemLocks等) は `TestFakes.all()` も回すこと
@@ -107,3 +141,5 @@ Neo Builder MOD for Minecraft Fabric servers.
 - DimBuffs は次元mobの HP/名を上書きする (twilight: HPx3、"Twilight <type>" 名) — `name=` セレクタではなく `type=` で検証
 - `inventory.add(stack)` は stack を空にする → 渡した stack の参照は add 後に空 (giveinv の表示は 0x air になるが実際は投入成功)
 - スロットindex: 0-8=ホットバー (selected=0 が mainhand 装備と共有)、9+=メイン
+- 実クライアントの openMenu 検証: プレイヤーが落下すると stillValid 距離超過で即クローズする → tp先の足元にブロック (fill ~ ~-1 ~) を敷くこと。「moved too quickly」「standing on air」ログが兆候
+- boss damage 検証: RCON の `@e[limit=1]` は実行地点 (ワールドスポーン) からの近距離順 → `execute positioned X Y Z run damage @e[distance=..N]` で対象を限定すること

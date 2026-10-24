@@ -48,6 +48,8 @@ public final class BCNBlocks {
     public static Block GRAVITITE_ORE;
     public static Block SKYROOT_LOG;
     public static Block SKYROOT_PLANKS;
+    public static Block COMPRESSOR;
+    public static Block URANIUM_ORE;
 
     public static void register() {
         STIRLING_ENGINE = machine("stirling_engine", StirlingEngineBlockEntity::new);
@@ -87,6 +89,10 @@ public final class BCNBlocks {
                 BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.WOOD));
         SKYROOT_PLANKS = block("skyroot_planks", Block::new,
                 BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.WOOD));
+        COMPRESSOR = machine("compressor", CompressorBlockEntity::new);
+        URANIUM_ORE = block("uranium_ore", Block::new,
+                BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.STONE)
+                        .requiresCorrectToolForDrops());
     }
 
     private static Block block(String name,
@@ -159,6 +165,7 @@ public final class BCNBlocks {
                 case SortingPipeBlockEntity e -> SortingPipeBlockEntity.tick(level, pos, state, e);
                 case CraftingPipeBlockEntity e -> CraftingPipeBlockEntity.tick(level, pos, state, e);
                 case DimensionGateBlockEntity e -> DimensionGateBlockEntity.tick(level, pos, state, e);
+                case CompressorBlockEntity e -> CompressorBlockEntity.tick(level, pos, state, e);
                 default -> {}
             }
         }
@@ -193,11 +200,18 @@ public final class BCNBlocks {
                     return InteractionResult.SUCCESS_SERVER;
                 } else if (be instanceof AtmBlockEntity atm
                         && player instanceof net.minecraft.server.level.ServerPlayer sp) {
-                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
-                            player.isShiftKeyDown()
-                                    ? "[BCN ATM] 引き出し " + atm.withdraw(sp, 500) + " MD"
-                                    : "[BCN ATM] 入金 " + atm.deposit(sp) + " MD"
-                                                    + " (残高=" + com.buildcraftneo.data.Profiles.md(sp) + ")"));
+                    if (player.isShiftKeyDown()) {
+                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                                "[BCN ATM] 引き出し " + atm.withdraw(sp, 500) + " MD"
+                                        + " (残高=" + com.buildcraftneo.data.Profiles.md(sp) + ")"));
+                    } else {
+                        sp.openMenu(new net.minecraft.world.SimpleMenuProvider(
+                                (id, inv, pl) -> new AtmMenu(id, inv,
+                                        new net.minecraft.world.SimpleContainer(
+                                                AtmMenu.DEPOSIT_SLOTS),
+                                        atm.getBlockPos()),
+                                net.minecraft.network.chat.Component.literal("ATM")));
+                    }
                     return InteractionResult.SUCCESS_SERVER;
                 } else if (be instanceof ShopBlockEntity shop && !player.isShiftKeyDown()
                         && player instanceof net.minecraft.server.level.ServerPlayer sp) {

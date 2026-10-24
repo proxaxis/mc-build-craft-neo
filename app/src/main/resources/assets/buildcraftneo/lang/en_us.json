@@ -93,5 +93,10 @@
   "item.buildcraftneo.ability_volley": "Ability: Volley",
   "item.buildcraftneo.paladin_mace": "Paladin Mace",
   "item.buildcraftneo.holy_staff": "Holy Staff",
-  "item.buildcraftneo.marksman_bow": "Marksman Bow"
+  "item.buildcraftneo.marksman_bow": "Marksman Bow",
+  "block.buildcraftneo.compressor": "Compressor",
+  "item.buildcraftneo.compressor": "Compressor",
+  "block.buildcraftneo.uranium_ore": "Uranium Ore",
+  "item.buildcraftneo.uranium_ore": "Uranium Ore",
+  "container.buildcraftneo.atm": "ATM"
 }

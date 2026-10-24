@@ -17,9 +17,10 @@ import net.minecraft.world.level.storage.ValueOutput;
  * the mode: NOT(back), OR(back|left|right), AND(left&right), XOR(left^right).
  */
 public class LogicGateBlockEntity extends BlockEntity {
-    public static final String[] MODES = {"not", "or", "and", "xor", "nand", "nor", "xnor"};
+    public static final String[] MODES = {"not", "or", "and", "xor", "nand", "nor", "xnor", "rs_latch"};
 
     private int mode;
+    private boolean latch;
 
     public LogicGateBlockEntity(BlockPos pos, BlockState state) {
         super(BCNBlockEntities.LOGIC_GATE, pos, state);
@@ -47,15 +48,23 @@ public class LogicGateBlockEntity extends BlockEntity {
         boolean inBack = powered(level, pos, back);
         boolean inLeft = powered(level, pos, left);
         boolean inRight = powered(level, pos, right);
-        boolean out = switch (be.mode) {
-            case 0 -> !inBack;
-            case 1 -> inBack || inLeft || inRight;
-            case 2 -> inLeft && inRight;
-            case 3 -> inLeft != inRight;
-            case 4 -> !(inLeft && inRight);
-            case 5 -> !(inBack || inLeft || inRight);
-            default -> inLeft == inRight;
-        };
+        boolean out;
+        if (be.mode == 7) {
+            // RS latch: left = set, right = reset (set wins)
+            if (inLeft) be.latch = true;
+            else if (inRight) be.latch = false;
+            out = be.latch;
+        } else {
+            out = switch (be.mode) {
+                case 0 -> !inBack;
+                case 1 -> inBack || inLeft || inRight;
+                case 2 -> inLeft && inRight;
+                case 3 -> inLeft != inRight;
+                case 4 -> !(inLeft && inRight);
+                case 5 -> !(inBack || inLeft || inRight);
+                default -> inLeft == inRight;
+            };
+        }
         if (state.getValue(BlockStateProperties.POWERED) != out) {
             level.setBlock(pos, state.setValue(BlockStateProperties.POWERED, out),
                     Block.UPDATE_ALL);
@@ -70,11 +79,13 @@ public class LogicGateBlockEntity extends BlockEntity {
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.putInt("mode", mode);
+        output.putBoolean("latch", latch);
     }
 
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
-        mode = input.getIntOr("mode", 0) % MODES.length;
+        mode = Math.floorMod(input.getIntOr("mode", 0), MODES.length);
+        latch = input.getBooleanOr("latch", false);
     }
 }

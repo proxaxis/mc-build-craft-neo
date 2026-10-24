@@ -12,36 +12,59 @@ import net.minecraft.server.bossevents.CustomBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.AABB;
 
 /**
- * Tracks spawned dungeon bosses: drives a custom boss bar (visible in
- * `bossbar list`) that follows nearby players and boss HP, and drops
- * bonus loot on boss death.
+ * Tracks spawned dungeon bosses: drives a custom boss bar, Cataclysm-style
+ * attack phases (periodic AoE smash, minion summons at HP thresholds),
+ * twilight altar progression unlocks, and bonus loot on death.
  */
 public final class BossManager {
     private BossManager() {}
 
-    private record Tracked(LivingEntity boss, CustomBossEvent bar) {}
+    private static final class Tracked {
+        final LivingEntity boss;
+        final CustomBossEvent bar;
+        final BlockPos altarPos;   // null = not linked to an altar
+        final int bossIndex;       // twilight altar selection index
+        int phaseFlags;            // bit0 = <50% minions spawned, bit1 = <25% burst done
+
+        Tracked(LivingEntity boss, CustomBossEvent bar, BlockPos altarPos, int bossIndex) {
+            this.boss = boss;
+            this.bar = bar;
+            this.altarPos = altarPos;
+            this.bossIndex = bossIndex;
+        }
+    }
 
     private static final Map<java.util.UUID, Tracked> BOSSES = new ConcurrentHashMap<>();
 
     public static void track(LivingEntity boss, MinecraftServer server) {
+        track(boss, server, null, -1);
+    }
+
+    public static void track(LivingEntity boss, MinecraftServer server,
+            BlockPos altarPos, int bossIndex) {
         CustomBossEvent bar = server.getCustomBossEvents().create(
                 server.overworld().getRandom(),
                 BCN.id("boss_" + boss.getUUID().toString().replace("-", "").substring(0, 12)),
                 Component.literal(boss.getName().getString()));
         bar.setColor(BossEvent.BossBarColor.RED);
         bar.setOverlay(BossEvent.BossBarOverlay.NOTCHED_10);
-        BOSSES.put(boss.getUUID(), new Tracked(boss, bar));
+        BOSSES.put(boss.getUUID(), new Tracked(boss, bar, altarPos, bossIndex));
     }
 
     public static boolean bossAliveAt(ServerLevel level, BlockPos pos, int radius) {
         for (Tracked t : BOSSES.values()) {
-            LivingEntity b = t.boss();
+            LivingEntity b = t.boss;
             if (b.isAlive() && b.level() == level
                     && b.blockPosition().closerThan(pos, radius)) {
                 return true;
@@ -55,26 +78,33 @@ public final class BossManager {
             var it = BOSSES.values().iterator();
             while (it.hasNext()) {
                 Tracked t = it.next();
-                LivingEntity b = t.boss();
+                LivingEntity b = t.boss;
                 if (!b.isAlive()) {
-                    t.bar().removeAllPlayers();
-                    server.getCustomBossEvents().remove(t.bar());
+                    t.bar.removeAllPlayers();
+                    server.getCustomBossEvents().remove(t.bar);
                     it.remove();
                     continue;
                 }
                 float max = b.getMaxHealth();
-                t.bar().setProgress(max > 0 ? b.getHealth() / max : 0);
+                t.bar.setProgress(max > 0 ? b.getHealth() / max : 0);
                 for (var p : ((ServerLevel) b.level()).players()) {
                     if (p.blockPosition().closerThan(b.blockPosition(), 64)) {
-                        t.bar().addPlayer(p);
+                        t.bar.addPlayer(p);
                     }
                 }
+                runPhases(server, t, b, max);
             }
         });
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
             if (!entity.entityTags().contains("bcn_boss")) return;
-            Entity e = entity;
-            if (!(e.level() instanceof ServerLevel level)) return;
+            if (!(entity.level() instanceof ServerLevel level)) return;
+            Tracked t = BOSSES.get(entity.getUUID());
+            if (t != null && t.altarPos != null) {
+                BlockEntity be = level.getBlockEntity(t.altarPos);
+                if (be instanceof com.buildcraftneo.industry.BossAltarBlockEntity altar) {
+                    altar.onBossKill(t.bossIndex);
+                }
+            }
             Block.popResource(level, entity.blockPosition(),
                     new ItemStack(Items.DIAMOND, 3));
             Block.popResource(level, entity.blockPosition(),
@@ -82,5 +112,49 @@ public final class BossManager {
             Block.popResource(level, entity.blockPosition(),
                     new ItemStack(Items.NETHERITE_SCRAP, 1));
         });
+    }
+
+    /** Cataclysm-style phase attacks driven off the tracked boss' HP. */
+    private static void runPhases(MinecraftServer server, Tracked t, LivingEntity b, float max) {
+        if (!(b.level() instanceof ServerLevel level)) return;
+        float hp = max > 0 ? b.getHealth() / max : 1f;
+
+        // periodic AoE smash every 80 ticks
+        if (level.getGameTime() % 80 == 0) {
+            aoeSmash(level, b, 5.0, 6.0f, false);
+        }
+        // phase 2 (<50% HP): summon two minions, once
+        if (hp < 0.5f && (t.phaseFlags & 1) == 0) {
+            t.phaseFlags |= 1;
+            for (int i = 0; i < 2; i++) {
+                var minion = new WitherSkeleton(EntityTypes.WITHER_SKELETON, level);
+                minion.setPos(b.getX() + (i == 0 ? 1.5 : -1.5), b.getY(), b.getZ() + 1.5);
+                minion.setCustomName(Component.literal("Monstrosity Minion"));
+                minion.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
+                minion.setPersistenceRequired();
+                minion.addTag("bcn_minion");
+                level.addFreshEntity(minion);
+            }
+        }
+        // phase 3 (<25% HP): one-time big burst + ignite
+        if (hp < 0.25f && (t.phaseFlags & 2) == 0) {
+            t.phaseFlags |= 2;
+            aoeSmash(level, b, 8.0, 12.0f, true);
+        }
+    }
+
+    private static void aoeSmash(ServerLevel level, LivingEntity boss, double radius,
+            float damage, boolean ignite) {
+        AABB box = boss.getBoundingBox().inflate(radius);
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box,
+                e -> e != boss && e.isAlive() && !e.entityTags().contains("bcn_boss")
+                        && !e.entityTags().contains("bcn_minion"))) {
+            e.hurtServer(level, level.damageSources().mobAttack(boss), damage);
+            double dx = e.getX() - boss.getX();
+            double dz = e.getZ() - boss.getZ();
+            double len = Math.max(0.1, Math.sqrt(dx * dx + dz * dz));
+            e.push(dx / len * 1.2, 0.4, dz / len * 1.2);
+            if (ignite) e.igniteForSeconds(4.0f);
+        }
     }
 }
