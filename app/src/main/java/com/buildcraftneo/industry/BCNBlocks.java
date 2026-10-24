@@ -65,6 +65,8 @@ public final class BCNBlocks {
     public static Block GEOTHERMAL_GENERATOR;
     public static Block BAT_BOX;
     public static Block BUS_CONVERTER;
+    public static Block BUS_TRANSCEIVER;
+    public static Block CHARGE_PAD;
 
     /** Extra insulated-wire colors by color name (channels 4-15). */
     public static final java.util.Map<String, Block> INSULATED_WIRES =
@@ -147,6 +149,10 @@ public final class BCNBlocks {
         BUS_CONVERTER = block("bus_converter", BusConverterBlock::new,
                 BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE)
                         .isRedstoneConductor((state, level, pos) -> false));
+        BUS_TRANSCEIVER = block("bus_transceiver", BusTransceiverBlock::new,
+                BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE)
+                        .isRedstoneConductor((state, level, pos) -> false));
+        CHARGE_PAD = machine("charge_pad", ChargePadBlockEntity::new);
     }
 
     private static BlockBehaviour.Properties wireProps() {
@@ -231,6 +237,7 @@ public final class BCNBlocks {
                 case GeothermalGeneratorBlockEntity e ->
                         GeothermalGeneratorBlockEntity.tick(level, pos, state, e);
                 case BatBoxBlockEntity e -> BatBoxBlockEntity.tick(level, pos, state, e);
+                case ChargePadBlockEntity e -> ChargePadBlockEntity.tick(level, pos, state, e);
                 default -> {}
             }
         }

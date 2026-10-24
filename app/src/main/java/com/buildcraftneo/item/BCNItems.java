@@ -122,8 +122,13 @@ public final class BCNItems {
     public static Item GRIP;
     public static Item SUPPRESSOR;
 
-    // IC2 EU tool
+    // IC2 EU tools
     public static Item MINING_LASER;
+    public static Item ELECTRIC_DRILL;
+    public static Item CHAINSAW;
+
+    // Point Blank throwable
+    public static Item GRENADE;
 
     /** MD value of each coin tier. */
     public static final java.util.Map<Item, Long> COIN_VALUES = new java.util.LinkedHashMap<>();
@@ -236,6 +241,24 @@ public final class BCNItems {
             Identifier id = BCN.id("mining_laser");
             MINING_LASER = Registry.register(BuiltInRegistries.ITEM, id,
                     new MiningLaserItem(new Item.Properties().stacksTo(1)
+                            .setId(ResourceKey.create(Registries.ITEM, id))));
+        }
+        {
+            Identifier id = BCN.id("electric_drill");
+            ELECTRIC_DRILL = Registry.register(BuiltInRegistries.ITEM, id,
+                    new ElectricDrillItem(new Item.Properties().stacksTo(1)
+                            .setId(ResourceKey.create(Registries.ITEM, id))));
+        }
+        {
+            Identifier id = BCN.id("chainsaw");
+            CHAINSAW = Registry.register(BuiltInRegistries.ITEM, id,
+                    new ChainsawItem(new Item.Properties().stacksTo(1)
+                            .setId(ResourceKey.create(Registries.ITEM, id))));
+        }
+        {
+            Identifier id = BCN.id("grenade");
+            GRENADE = Registry.register(BuiltInRegistries.ITEM, id,
+                    new GrenadeItem(new Item.Properties().stacksTo(16)
                             .setId(ResourceKey.create(Registries.ITEM, id))));
         }
 

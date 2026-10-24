@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:iron_ingot",
+    "minecraft:tnt"
+  ],
+  "result": {
+    "id": "buildcraftneo:grenade",
+    "count": 2
+  }
+}

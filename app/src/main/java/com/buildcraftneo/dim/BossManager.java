@@ -142,6 +142,11 @@ public final class BossManager {
         if (hp < 0.75f && level.getGameTime() % 160 == 40) {
             fireballRing(level, b);
         }
+        // fang phase (<60% HP): evoker-fang ring erupts around the nearest
+        // player every 140 ticks
+        if (hp < 0.6f && level.getGameTime() % 140 == 70) {
+            fangRing(level, b);
+        }
         // phase 2 (<50% HP): summon two minions, once
         if (hp < 0.5f && (t.phaseFlags & 1) == 0) {
             t.phaseFlags |= 1;
@@ -208,6 +213,36 @@ public final class BossManager {
                 level, boss, aim.scale(1.5));
         fb.setPos(boss.getX() + aim.x * 1.5, boss.getEyeY(), boss.getZ() + aim.z * 1.5);
         level.addFreshEntity(fb);
+    }
+
+    /**
+     * Cataclysm-style fang phase: while below 60% HP the boss periodically
+     * erupts a ring of evoker fangs around the nearest player, like the
+     * Evoker's close-range attack.
+     */
+    private static void fangRing(ServerLevel level, LivingEntity boss) {
+        var box = boss.getBoundingBox().inflate(20.0);
+        var players = level.getEntitiesOfClass(
+                net.minecraft.server.level.ServerPlayer.class, box,
+                p -> p.isAlive() && !p.isSpectator());
+        if (players.isEmpty()) return;
+        var target = players.getFirst();
+        double best = target.distanceToSqr(boss);
+        for (var p : players) {
+            if (p.distanceToSqr(boss) < best) {
+                best = p.distanceToSqr(boss);
+                target = p;
+            }
+        }
+        int count = 8;
+        for (int i = 0; i < count; i++) {
+            double angle = Math.PI * 2 * i / count;
+            double fx = target.getX() + Math.cos(angle) * 2.5;
+            double fz = target.getZ() + Math.sin(angle) * 2.5;
+            var fang = new net.minecraft.world.entity.projectile.EvokerFangs(
+                    level, fx, target.getY(), fz, (float) angle, i, boss);
+            level.addFreshEntity(fang);
+        }
     }
 
     /** Cataclysm-style bullet phase: a ring of fireballs in every direction. */

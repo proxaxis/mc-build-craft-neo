@@ -1,0 +1,8 @@
+{"variants": {
+"facing=north": {"model": "buildcraftneo:block/bus_transceiver"},
+"facing=south": {"model": "buildcraftneo:block/bus_transceiver", "y": 180},
+"facing=east": {"model": "buildcraftneo:block/bus_transceiver", "y": 90},
+"facing=west": {"model": "buildcraftneo:block/bus_transceiver", "y": 270},
+"facing=up": {"model": "buildcraftneo:block/bus_transceiver", "x": 270},
+"facing=down": {"model": "buildcraftneo:block/bus_transceiver", "x": 90}
+}}

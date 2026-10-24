@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "CBC"
+  ],
+  "key": {
+    "P": "minecraft:stone_pressure_plate",
+    "C": "minecraft:copper_ingot",
+    "B": "buildcraftneo:bat_box"
+  },
+  "result": {
+    "id": "buildcraftneo:charge_pad",
+    "count": 1
+  }
+}

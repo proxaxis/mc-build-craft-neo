@@ -161,5 +161,10 @@
   "block.buildcraftneo.anchored_frame": "Anchored Frame",
   "block.buildcraftneo.bus_converter": "Bus Converter",
   "block.buildcraftneo.bat_box": "BatBox",
-  "item.buildcraftneo.mining_laser": "Mining Laser"
+  "item.buildcraftneo.mining_laser": "Mining Laser",
+  "block.buildcraftneo.bus_transceiver": "Bus Transceiver",
+  "block.buildcraftneo.charge_pad": "Charge Pad",
+  "item.buildcraftneo.electric_drill": "Electric Drill",
+  "item.buildcraftneo.chainsaw": "Chainsaw",
+  "item.buildcraftneo.grenade": "Grenade"
 }

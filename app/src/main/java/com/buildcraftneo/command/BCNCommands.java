@@ -228,6 +228,10 @@ public final class BCNCommands {
                         .then(Commands.literal("sneak").then(Commands.argument("name", StringArgumentType.word())
                                 .then(Commands.argument("value", StringArgumentType.word())
                                         .executes(BCNCommands::fakeSneak))))
+                        .then(Commands.literal("move").then(Commands.argument("name", StringArgumentType.word())
+                                .then(Commands.argument("pos",
+                                                net.minecraft.commands.arguments.coordinates.Vec3Argument.vec3())
+                                        .executes(BCNCommands::fakeMove))))
                         .then(Commands.literal("dropslot").then(Commands.argument("name", StringArgumentType.word())
                                 .then(Commands.argument("slot", IntegerArgumentType.integer(0))
                                         .executes(BCNCommands::fakeDropSlot))))
@@ -772,6 +776,17 @@ public final class BCNCommands {
         boolean sneak = StringArgumentType.getString(ctx, "value").equalsIgnoreCase("true");
         p.setShiftKeyDown(sneak);
         tell(ctx, p.getName().getString() + " sneak=" + sneak);
+        return 1;
+    }
+
+    /** Teleport a fake player within the overworld (fakes ignore /tp). */
+    private static int fakeMove(CommandContext<CommandSourceStack> ctx) {
+        ServerPlayer p = fake(ctx);
+        if (p == null) return 0;
+        var v = net.minecraft.commands.arguments.coordinates.Vec3Argument.getVec3(ctx, "pos");
+        p.teleportTo(p.level(), v.x, v.y, v.z, java.util.Set.of(),
+                p.getYRot(), p.getXRot(), true);
+        tell(ctx, "moved " + p.getName().getString() + " -> " + p.blockPosition().toShortString());
         return 1;
     }
 

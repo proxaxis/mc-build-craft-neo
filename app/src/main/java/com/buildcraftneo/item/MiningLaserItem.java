@@ -25,7 +25,7 @@ import net.minecraft.world.phys.Vec3;
  *
  * Charge is stored in {@code CUSTOM_DATA.eu}; new lasers start empty.
  */
-public class MiningLaserItem extends Item {
+public class MiningLaserItem extends Item implements EuChargeable {
     public static final int CAPACITY = 10_000;
     public static final int SHOT_COST = 500;
     private static final double RANGE = 24.0;
@@ -34,40 +34,22 @@ public class MiningLaserItem extends Item {
         super(properties);
     }
 
-    // ---- EU charge helpers ----
+    @Override
+    public int euCapacity() {
+        return CAPACITY;
+    }
 
-    public static int eu(ItemStack stack) {
+    /** EU of a bare stack (call sites that only hold an ItemStack). */
+    public static int euOf(ItemStack stack) {
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
         return data == null ? 0 : data.copyTag().getIntOr("eu", 0);
-    }
-
-    /** Add up to amount EU, returns how much was accepted. */
-    public long charge(ItemStack stack, long amount) {
-        int cur = eu(stack);
-        int add = (int) Math.min(amount, CAPACITY - cur);
-        if (add > 0) {
-            CustomData.update(DataComponents.CUSTOM_DATA, stack, t -> t.putInt("eu", cur + add));
-        }
-        return add;
-    }
-
-    /** Drain EU, returns false when insufficient charge. */
-    public static boolean drain(ItemStack stack, int amount) {
-        int cur = eu(stack);
-        if (cur < amount) return false;
-        int left = cur - amount;
-        CustomData.update(DataComponents.CUSTOM_DATA, stack, t -> {
-            if (left <= 0) t.remove("eu");
-            else t.putInt("eu", left);
-        });
-        return true;
     }
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (!(player instanceof ServerPlayer sp)) return InteractionResult.PASS;
         ItemStack stack = player.getItemInHand(hand);
-        if (!drain(stack, SHOT_COST)) {
+        if (!drainEu(stack, SHOT_COST)) {
             sp.sendSystemMessage(Component.literal(
                     "[BCN] mining_laser: EU不足 (" + eu(stack) + "/" + CAPACITY
                             + ") - bat_boxで充電してください"));

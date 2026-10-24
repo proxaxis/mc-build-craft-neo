@@ -31,6 +31,7 @@ public final class BCNBlockEntities {
     public static BlockEntityType<GeothermalGeneratorBlockEntity> GEOTHERMAL_GENERATOR;
     public static BlockEntityType<BundledWireBlockEntity> BUNDLED_WIRE;
     public static BlockEntityType<BatBoxBlockEntity> BAT_BOX;
+    public static BlockEntityType<ChargePadBlockEntity> CHARGE_PAD;
 
     public static void register() {
         STIRLING_ENGINE = type("stirling_engine", StirlingEngineBlockEntity::new, BCNBlocks.STIRLING_ENGINE);
@@ -57,6 +58,7 @@ public final class BCNBlockEntities {
         BUNDLED_WIRE = type("bundled_wire", BundledWireBlockEntity::new,
                 BCNBlocks.BUNDLED_WIRE);
         BAT_BOX = type("bat_box", BatBoxBlockEntity::new, BCNBlocks.BAT_BOX);
+        CHARGE_PAD = type("charge_pad", ChargePadBlockEntity::new, BCNBlocks.CHARGE_PAD);
     }
 
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> type(

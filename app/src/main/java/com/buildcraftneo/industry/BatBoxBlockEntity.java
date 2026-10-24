@@ -1,5 +1,6 @@
 package com.buildcraftneo.industry;
 
+import com.buildcraftneo.item.EuChargeable;
 import com.buildcraftneo.item.MiningLaserItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -29,8 +30,8 @@ public class BatBoxBlockEntity extends MachineBlockEntity {
         if (level.isClientSide() || !(level instanceof ServerLevel)) return;
         for (int i = 0; i < self.items.size() && self.mj > 0; i++) {
             ItemStack s = self.items.get(i);
-            if (s.getItem() instanceof MiningLaserItem laser) {
-                long moved = laser.charge(s, Math.min(CHARGE_RATE, self.mj));
+            if (s.getItem() instanceof EuChargeable tool) {
+                long moved = tool.chargeEu(s, Math.min(CHARGE_RATE, self.mj));
                 if (moved > 0) {
                     self.mj -= moved;
                     self.setChanged();
@@ -44,9 +45,8 @@ public class BatBoxBlockEntity extends MachineBlockEntity {
         StringBuilder sb = new StringBuilder(super.status()).append(" eu=").append(mj);
         for (int i = 0; i < items.size(); i++) {
             ItemStack s = items.get(i);
-            if (s.getItem() instanceof MiningLaserItem) {
-                sb.append(" slot").append(i).append(".charge=")
-                        .append(MiningLaserItem.eu(s));
+            if (s.getItem() instanceof EuChargeable tool) {
+                sb.append(" slot").append(i).append(".charge=").append(tool.eu(s));
             }
         }
         return sb.toString();

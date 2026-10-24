@@ -221,3 +221,19 @@ Neo Builder MOD for Minecraft Fabric servers.
 - **RCON で item_pipe のある場所に機械を置くと中身を吸われる** — テストは隔離場所で
 - **Xvfbウィンドウ名は `Minecraft* 26.3`** — `xdotool search --name Minecraft` は検出できないことがある。`mousemove + click` はアクティブ化なしでも効く
 - **海上テスト注意**: スポーン周辺は海面が深い。描画確認は y=150 程度のプラットフォーム上が確実
+
+## 追加実装 (commit a017b4f 以降)
+
+- **ProjectRed bus_transceiver** (近似): ゲート付き一方向 bundled リレー。FACING=出力面、背面=入力バス、側面4面=アナログ制御入力。制御ONで入力バスの mask を出力バスへ注入 (無電源なら0)。一方向のみなので自己ラッチしない。`BundledWireBlock.localInput` が `wireFace==FACING` のときのみ注入、bundled tick が隣接 transceiver を wake。**検証済**: 入力バスon(出力off)→制御lever ONで出力バスon+tap wire=15→制御OFFで出力off・入力維持
+- **IC2 EU工具**: `EuChargeable` インターフェース (CUSTOM_DATA `eu`、euCapacity/chargeEu/drainEu)。MiningLaserItem が実装するようリファクタ、bat_box は EuChargeable 全般を充電 (200EU/t)。`electric_drill` (容量20000、50EU/ブロック、照準面に3x3掘削)、`chainsaw` (容量20000、25EU/原木、26近傍BFSで最大64本の木こり)。**検証済**: drill=3x3穴+450EU消費、chainsaw=7本伐採+175EU消費、bat_box が chainsaw を5000→4200充電
+- **IC2 charge_pad**: `charge_pad` 機械 (EU 40000、MJを1:1蓄電)。直上のLivingEntityの装備6スロット(main/off/頭/胸/脚/足)の EuChargeable を200EU/t充電。FakePlayerはエンティティリスト非含有のため `TestFakes.all()` もスキャン。**検証済**: pad上のfakeのdrillが eu=0→8200
+- **Point Blank grenade**: `grenade` (stack16)。use→視線方向に PrimedTnt (fuse 30t、速度=look*1.3+上昇0.25) を投擲、1個消費。**検証済**: 投擲で `type=tnt` 検出、tick領域内で爆発+ドロップ散乱、非tick領域では fuse 凍結 (vanilla仕様)
+- **Cataclysm 牙フェーズ**: HP<60%で140t毎に `fangRing` — 20ブロック内の最近プレイヤー周囲r=2.5に `EvokerFangs` 8本のリング (Evoker近接技風)。**検証済**: HP190/350で DevClient 周囲に `evoker_fangs` を検出
+- **`/bcn fake move <name> <pos>`**: Vec3Argumentでfakeを overworld 内 teleport (`teleportTo(level,x,y,z,Set.of(),yaw,pitch,true)`)。charge_pad等の位置依存テスト用
+
+## 検証ノート (追加6)
+
+- **rcon-cli の `execute if` は常に何か出力する**: "Test failed" も非空文字列 → シェルで `[ -n "$r" ]` 判定は不可。`grep -q "Test passed"` で判定すること
+- **`@e[limit=1]` はワールドスポーンからの近距離順**: 複数同名エンティティがいるとき data get は `execute positioned X Y Z as @e[...distance=..N]` で絞る
+- **投擲物/弾は非tick領域で凍結する**: TNT が z=48 (スポーンチャンク0-47の外) に着弾すると fuse が減らず残存。検証はtick領域内で
+- **EvokerFangs の寿命は約22t**: spawn 直後に warmup→ダメージ→消滅するので検出はポーリング必須 (0.5s間隔で約1.5s検出可能)
