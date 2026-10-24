@@ -111,6 +111,14 @@ public final class BossManager {
                     new ItemStack(com.buildcraftneo.item.BCNItems.GOLD_COIN, 5));
             Block.popResource(level, entity.blockPosition(),
                     new ItemStack(Items.NETHERITE_SCRAP, 1));
+            // Twilight Forest-style boss-specific rewards
+            if (t != null && t.bossIndex == 1) {
+                Block.popResource(level, entity.blockPosition(),
+                        new ItemStack(com.buildcraftneo.item.BCNItems.NAGA_SCALE, 4));
+            } else if (t != null && t.bossIndex == 2) {
+                Block.popResource(level, entity.blockPosition(),
+                        new ItemStack(com.buildcraftneo.item.BCNItems.LICH_SCEPTER, 1));
+            }
         });
     }
 

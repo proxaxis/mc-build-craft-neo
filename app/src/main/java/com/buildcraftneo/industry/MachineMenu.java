@@ -5,6 +5,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
@@ -15,6 +16,8 @@ import net.minecraft.world.item.ItemStack;
 public class MachineMenu extends AbstractContainerMenu {
     private final Container machineInv;
     private final net.minecraft.core.BlockPos pos;
+    private final DataSlot mjPct = DataSlot.standalone();
+    private final DataSlot progPct = DataSlot.standalone();
 
     /** MenuSupplier constructor (client side). */
     public MachineMenu(int id, Inventory inv) {
@@ -31,10 +34,30 @@ public class MachineMenu extends AbstractContainerMenu {
             addSlot(new Slot(machineInv, i, 8 + i * 18, 20));
         }
         addStandardInventorySlots(inv, 8, 20 + 18 + 14);
+        addDataSlot(mjPct);
+        addDataSlot(progPct);
     }
 
     public int machineSlots() {
         return Math.min(machineInv.getContainerSize(), 9);
+    }
+
+    public int mjPercent() {
+        return mjPct.get();
+    }
+
+    public int progressPercent() {
+        return progPct.get();
+    }
+
+    @Override
+    public void broadcastChanges() {
+        if (machineInv instanceof MachineBlockEntity mbe) {
+            mjPct.set((int) Math.min(100,
+                    mbe.stored() * 100 / Math.max(1, mbe.mjCapacity())));
+            progPct.set(mbe.progressPercent());
+        }
+        super.broadcastChanges();
     }
 
     @Override

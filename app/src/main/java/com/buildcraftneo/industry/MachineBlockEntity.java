@@ -54,6 +54,11 @@ public abstract class MachineBlockEntity extends BlockEntity implements Containe
         return true;
     }
 
+    /** 0-100 craft progress for GUI bars; machines without progress return 0. */
+    public int progressPercent() {
+        return 0;
+    }
+
     // ---- Container ----
 
     @Override

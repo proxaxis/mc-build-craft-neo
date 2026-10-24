@@ -1,0 +1,1 @@
+{ "parent": "minecraft:item/generated", "textures": { "layer0": "buildcraftneo:item/inc_ammo" } }

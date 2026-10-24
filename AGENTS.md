@@ -109,6 +109,14 @@ Neo Builder MOD for Minecraft Fabric servers.
 - **ATM実GUI**: `AtmMenu` (9入金スロット+player inv、閉じるとコイン→MD変換、非コイン返却) + `AtmScreen` (クライアント)。atm右クリ=GUI、スニーク右クリ=500MD引出(従来通り)。`/bcn shop menu`/`fake menuopen` が atm も対応。**検証済**: fake menuopen→menuclick→menuclose で gold_coin x3→300MD、XvfbでAtmScreen描画確認
 - **機械共通GUI**: `MachineMenu` (任意 MachineBlockEntity のスロット≤9を表示、pos距離stillValid) + `MachineScreen` + `/bcn machine menu <pos> <player>`。`fake menuopen` も全機械に対応。**検証済**: fake menuopen で MachineMenu slots=39、Xvfbで MachineScreen(Compressor) 描画確認
 
+## 追加実装 (commit d5d4157 以降)
+
+- **ProjectRed 追加gate**: logic_gate mode 8 `buffer` (back入力をそのまま出力)、mode 9 `d_latch` (back=clock立上りで left=data をラッチ、prevClock永続化)。`powered()` は weak+direct 両信号を読む (insulated_wire入力対応)。**検証済**: d_latch で D=1+clock立上り→Q=1、clock保持中D=0でもQ保持、clock再立上りでQ=0
+- **insulated_wire** (ProjectRed transmission近似): POWER 0-15、wire間は-1減衰で伝搬、イベント駆動scheduleTick。`getSignal=0`/`getDirectSignal=POWER` + `isRedstoneConductor=false` で弱電力漏れなし → gateはdirect signalで読めるが隣接lamp/dustには通電しない「絶縁」。テクスチャ=ProjectRed transmission jar由来。**検証済**: lever→wire 15/14/13減衰→buffer gate→lamp点灯、隣接lamp非点灯
+- **Point Blank 弾種**: `ap_ammo` (威力x1.5+crit)、`inc_ammo` (焼夷5s燃焼弾)。リロード時に最初に見つかった弾薬を装填し CUSTOM_DATA `rounds`="ap"/"inc"/"" を銃に記録。`fake status` が手持ちの dmg/data を表示するよう拡張。**検証済**: 徹甲弾装填→`data={rounds:"ap"}`、焼夷弾装填→`rounds:"inc"`
+- **Twilight ボス固有ドロップ**: Naga討伐→`naga_scale` x4、Lich討伐→`lich_scepter` (20MP消費で雷撃発動する非消耗SpellItem)。twilight_scepter/naga_scale テクスチャ=twilightforest jar由来。**検証済**: type=slime kill→naga_scale item entity、type=evoker kill→lich_scepter、scepter使用でMP100→80
+- **機械GUIメータ**: MachineMenu が DataSlot で `mjPct`/`progPct` を broadcastChanges 同期 (`MachineBlockEntity.progressPercent()`、compressor/maceratorがoverride)。MachineScreen に右端MJメータ(橙)+スロット上の進捗バー(緑)を描画。**検証済**: Xvfb で Compressor 画面にMJメータ+鉱石スタック描画を確認
+
 ## BASE_MOD_LIST 実装マトリクス (最終棚卸し)
 
 | MOD | 実装状況 |
@@ -122,7 +130,7 @@ Neo Builder MOD for Minecraft Fabric servers.
 | Iron's Spells | ✅ スペル14種+MP+職業ゲート+spellbook(7スペル切替)+scroll4種。詠唱モーション/ツリーGUIは未実施 |
 | Paladins & Priests | ✅ paladin/priest職+ability_barrier/consecrate+paladin_mace/holy_staff |
 | Archers | ✅ marksman職+ability_volley+marksman_bow (既存archer職+rain_of_arrows等も) |
-| Twilight Forest | ✅ twilight次元+DimBuffs+祭壇ボス3種(Naga/Lich含む)+進行ゲート+迷路/塔構造 |
+| Twilight Forest | ✅ twilight次元+DimBuffs+祭壇ボス3種+進行ゲート+迷路/塔+ボス固有ドロップ(naga_scale/lich_scepter) |
 | Cataclysm | ✅ overworld祭壇→Nether Monstrosity + フェーズ攻撃(AoE/ミニオン/バースト) |
 | The Aether | ✅ skyreach次元+ambrosium/zanite鉱石+gravitite浮遊+skyroot+parachute |
 | GvC | ✅ `/bcn disaster soldiers` 兵士レイド (Vindicator/Pillager/重装Zombie近似) |
@@ -131,8 +139,8 @@ Neo Builder MOD for Minecraft Fabric servers.
 | Logistics Pipes | ✅ request/supplier/sorting/crafting_pipe + PipeNetwork共有BFS |
 | Additional Pipes | ✅ teleport_pipe次元横断チャネル0-7 (both/send/receive) |
 | IndustrialCraft 2 | ✅ macerator+粉砕dust+compressor+uranium鉱石→ingot→reactor燃料+核メルトダウン (EU体系はMJ近似) |
-| ProjectRed | ✅ timer+logic_gate 8モード(not/or/and/xor/nand/nor/xnor/rs_latch)+lamp。絶縁wire/bundledは未実施 |
-| Vic's Point Blank | ✅ 銃6種+マガジン耐久+ammoリロード+pellet (アニメーション/アタッチメントは近似なし) |
+| ProjectRed | ✅ timer+logic_gate 10モード(not/or/and/xor/nand/nor/xnor/rs_latch/buffer/d_latch)+lamp+insulated_wire。bundled wireは未実施 |
+| Vic's Point Blank | ✅ 銃6種+マガジン耐久+弾種3種(通常/徹甲/焼夷)リロード+pellet (アニメーション/アタッチメントは近似なし) |
 | Lightman's Currency | ✅ 6種コイン+MD+shop+auction+ATM(GUI付) |
 
 ## 検証ノート (追加)

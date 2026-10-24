@@ -1,0 +1,18 @@
+{ "variants": {
+  "power=0": { "model": "buildcraftneo:block/insulated_wire_off" },
+  "power=1": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=2": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=3": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=4": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=5": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=6": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=7": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=8": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=9": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=10": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=11": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=12": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=13": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=14": { "model": "buildcraftneo:block/insulated_wire_on" },
+  "power=15": { "model": "buildcraftneo:block/insulated_wire_on" }
+} }

@@ -366,6 +366,13 @@ public final class BCNCommands {
                 Profiles.xp(p), Profiles.level(p),
                 com.buildcraftneo.data.ItemLocks.describe(p),
                 fx.isEmpty() ? "-" : fx.toString().trim()));
+        ItemStack held = p.getMainHandItem();
+        var data = held.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        tell(ctx, "  held=" + net.minecraft.core.registries.BuiltInRegistries.ITEM
+                .getKey(held.getItem())
+                + " x" + held.getCount()
+                + " dmg=" + held.getDamageValue()
+                + " data=" + (data == null ? "-" : data.copyTag()));
         return 1;
     }
 

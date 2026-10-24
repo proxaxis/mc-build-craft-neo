@@ -17,10 +17,12 @@ import net.minecraft.world.level.storage.ValueOutput;
  * the mode: NOT(back), OR(back|left|right), AND(left&right), XOR(left^right).
  */
 public class LogicGateBlockEntity extends BlockEntity {
-    public static final String[] MODES = {"not", "or", "and", "xor", "nand", "nor", "xnor", "rs_latch"};
+    public static final String[] MODES = {"not", "or", "and", "xor", "nand", "nor", "xnor",
+            "rs_latch", "buffer", "d_latch"};
 
     private int mode;
     private boolean latch;
+    private boolean prevClock;
 
     public LogicGateBlockEntity(BlockPos pos, BlockState state) {
         super(BCNBlockEntities.LOGIC_GATE, pos, state);
@@ -54,6 +56,11 @@ public class LogicGateBlockEntity extends BlockEntity {
             if (inLeft) be.latch = true;
             else if (inRight) be.latch = false;
             out = be.latch;
+        } else if (be.mode == 9) {
+            // D latch: back = clock, left = data. Latches data on clock rising edge.
+            if (inBack && !be.prevClock) be.latch = inLeft;
+            be.prevClock = inBack;
+            out = be.latch;
         } else {
             out = switch (be.mode) {
                 case 0 -> !inBack;
@@ -62,6 +69,7 @@ public class LogicGateBlockEntity extends BlockEntity {
                 case 3 -> inLeft != inRight;
                 case 4 -> !(inLeft && inRight);
                 case 5 -> !(inBack || inLeft || inRight);
+                case 8 -> inBack;
                 default -> inLeft == inRight;
             };
         }
@@ -72,7 +80,10 @@ public class LogicGateBlockEntity extends BlockEntity {
     }
 
     private static boolean powered(Level level, BlockPos pos, Direction inputSide) {
-        return level.getSignal(pos.relative(inputSide), inputSide) > 0;
+        // Read both weak and direct signals so insulated_wire (direct-only) can feed gates.
+        BlockPos nb = pos.relative(inputSide);
+        return level.getSignal(nb, inputSide) > 0
+                || level.getDirectSignal(nb, inputSide) > 0;
     }
 
     @Override
@@ -80,6 +91,7 @@ public class LogicGateBlockEntity extends BlockEntity {
         super.saveAdditional(output);
         output.putInt("mode", mode);
         output.putBoolean("latch", latch);
+        output.putBoolean("prevClock", prevClock);
     }
 
     @Override
@@ -87,5 +99,6 @@ public class LogicGateBlockEntity extends BlockEntity {
         super.loadAdditional(input);
         mode = Math.floorMod(input.getIntOr("mode", 0), MODES.length);
         latch = input.getBooleanOr("latch", false);
+        prevClock = input.getBooleanOr("prevClock", false);
     }
 }

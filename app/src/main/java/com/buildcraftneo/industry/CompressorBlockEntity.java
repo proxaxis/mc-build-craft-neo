@@ -99,6 +99,11 @@ public class CompressorBlockEntity extends MachineBlockEntity {
     }
 
     @Override
+    public int progressPercent() {
+        return progress * 100 / TICKS_PER_OP;
+    }
+
+    @Override
     public String status() {
         return super.status() + " progress=" + progress + "/" + TICKS_PER_OP;
     }

@@ -97,6 +97,10 @@ public final class BCNItems {
     public static Item PALADIN_MACE;
     public static Item HOLY_STAFF;
     public static Item MARKSMAN_BOW;
+    public static Item AP_AMMO;
+    public static Item INC_AMMO;
+    public static Item NAGA_SCALE;
+    public static Item LICH_SCEPTER;
 
     /** MD value of each coin tier. */
     public static final java.util.Map<Item, Long> COIN_VALUES = new java.util.LinkedHashMap<>();
@@ -163,6 +167,10 @@ public final class BCNItems {
         PALADIN_MACE = melee("paladin_mace", 11.0, -2.6, 80, Abilities::holySmite);
         HOLY_STAFF = ability("holy_staff", com.buildcraftneo.data.Job.PRIEST, 15, 160, Abilities::sanctuary);
         MARKSMAN_BOW = bow("marksman_bow", 14.0, 12);
+        AP_AMMO = simple("ap_ammo");
+        INC_AMMO = simple("inc_ammo");
+        NAGA_SCALE = simple("naga_scale");
+        LICH_SCEPTER = lichScepter("lich_scepter");
 
         COIN_VALUES.put(COPPER_COIN, 1L);
         COIN_VALUES.put(IRON_COIN, 10L);
@@ -282,5 +290,19 @@ public final class BCNItems {
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
         return Registry.register(BuiltInRegistries.ITEM, id,
                 new SimpleBowItem(new Item.Properties().setId(key).durability(384), damage, cooldownTicks));
+    }
+
+    /** Twilight Forest-style Lich drop: reusable scepter that casts lightning. */
+    private static Item lichScepter(String name) {
+        Identifier id = BCN.id(name);
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        return Registry.register(BuiltInRegistries.ITEM, id,
+                new SpellItem(new Item.Properties().setId(key).stacksTo(1), 20) {
+                    @Override
+                    protected void cast(net.minecraft.server.level.ServerPlayer caster) {
+                        Abilities.lightning(caster,
+                                (net.minecraft.server.level.ServerLevel) caster.level());
+                    }
+                });
     }
 }

@@ -98,5 +98,11 @@
   "item.buildcraftneo.compressor": "Compressor",
   "block.buildcraftneo.uranium_ore": "Uranium Ore",
   "item.buildcraftneo.uranium_ore": "Uranium Ore",
-  "container.buildcraftneo.atm": "ATM"
+  "container.buildcraftneo.atm": "ATM",
+  "block.buildcraftneo.insulated_wire": "Insulated Wire",
+  "item.buildcraftneo.insulated_wire": "Insulated Wire",
+  "item.buildcraftneo.ap_ammo": "Armor-Piercing Ammo",
+  "item.buildcraftneo.inc_ammo": "Incendiary Ammo",
+  "item.buildcraftneo.naga_scale": "Naga Scale",
+  "item.buildcraftneo.lich_scepter": "Scepter of Twilight"
 }

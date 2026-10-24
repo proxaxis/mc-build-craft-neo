@@ -50,6 +50,7 @@ public final class BCNBlocks {
     public static Block SKYROOT_PLANKS;
     public static Block COMPRESSOR;
     public static Block URANIUM_ORE;
+    public static Block INSULATED_WIRE;
 
     public static void register() {
         STIRLING_ENGINE = machine("stirling_engine", StirlingEngineBlockEntity::new);
@@ -93,6 +94,10 @@ public final class BCNBlocks {
         URANIUM_ORE = block("uranium_ore", Block::new,
                 BlockBehaviour.Properties.of().strength(3.0f).sound(SoundType.STONE)
                         .requiresCorrectToolForDrops());
+        INSULATED_WIRE = block("insulated_wire", InsulatedWireBlock::new,
+                BlockBehaviour.Properties.of().strength(0.5f).sound(SoundType.STONE)
+                        // non-conductor: direct signals in must not leak out as weak power
+                        .isRedstoneConductor((state, level, pos) -> false));
     }
 
     private static Block block(String name,

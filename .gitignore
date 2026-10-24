@@ -36,3 +36,7 @@ crash-reports/
 
 .DS_Store
 Thumbs.db
+
+# 大型バイナリ (誤コミット対策: 実体はローカル保持、テクスチャ抽出元)
+sample/
+docs/pdf/
