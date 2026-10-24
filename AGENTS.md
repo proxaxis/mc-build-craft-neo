@@ -168,3 +168,20 @@ Neo Builder MOD for Minecraft Fabric servers.
 - DevClient が死亡すると attachment (MD等) はリセットされる (コピー未設定) — ATM検証等で生存が前提の値は死亡に注意
 - Xvfb の GUI クリックは `xdotool search --name Minecraft windowactivate` 後に mousemove+click。死亡画面のボタン位置は "Respawn"=中央上段、"Title Screen"=下段 (誤クリックで切断確認画面が出る → 右側 "Respawn" を押す)
 - ボス範囲攻撃の実機検証は DevClient を survival にして近接配置する (4-24ブロック)。fireball は飛翔時間が短いので実体検出は `kill @e[type=small_fireball]` の "Killed" 出力で確実に確認
+
+## 追加実装 (commit 12f7823 以降)
+
+- **ProjectRed bundled wire** (近似: 16ch→4ch): `bundled_wire` ブロック。`MASK` 0-15 (bit0=無色,1=red,2=green,3=blue)。同色 insulated wire 経由でのみ入出力 — 絶縁ワイヤの `BUNDLED` フラグが「バス駆動」を示し、バス側はそれを入力として再読みしない (フィードバックループによる自己ラッチ防止)。tick 時に接続された全 bundled wire を BFS してネットワーク mask = 全外部入力の OR を全ノードに適用 (相互ORによるラッチを解消)。**検証済**: lever→red wire→bundled x2→red wire(p15,bundled=true)、green tap は0、レバーOFFで全クリア (ラッチなし)
+- **ProjectRed frame + frame_motor**: `frame` (ラティス状ブロック)、`frame_motor` (FACING 方向)。レッドストーン立上りまたは `/bcn machine nudge <pos>` で、正面の接続フレーム構造 (BFS、上限64) + フレームに接する持ち運び可能ブロック (BEなし/非流体/破壊可) を1マス移動。フレームは接触した全ブロックを掴む = 床上では床を引きずれず移動不可 (原作同様)。**検証済**: 浮遊フレーム2個+接する石ブロックが1マス移動、2回目は構造がモーターから離れたため "no frame / blocked" (正しい動作)
+- **IC2 フルスーツ近似**: nano/quantum の helmet/leggings/boots 追加 (humanoidArmor、部位別ArmorType)。`ArmorEffects` が全スロットを検査: nano=helm水中呼吸/leg速度I/boots跳躍I/chest耐性I、quantum=helm暗視+水中呼吸/leg速度II/boots跳躍II/chest耐性II+耐火。`/bcn fake equip` は EQUIPPABLE コンポーネントから正しいスロットへ装備。**検証済**: quantumフルセット装備で fx=fire_resistance,night_vision,resistance,jump_boost,speed,water_breathing の6種確認
+- **IC2 solar_panel** (近似): `solar_panel` 機械 = 日照時 (canSeeSky+isBrightOutside+非雨天) に 1 MJ/t 発電し隣接機械へ push。**検証済**: time set day で隣の macerator mj=122 に蓄積
+- **Twilight 追加**: `naga_leggings` (naga_scale レシピ付)、`lich_crown` (GOLD素材ヘルメット、Lich討伐ドロップ)。**検証済**: twilight祭壇 Lich 撃破で lich_crown+lich_scepter のアイテムエンティティ確認
+- **Point Blank アタッチメント追加**: `grip` (散布x0.5)、`suppressor` (威力x0.9 + 矢を setSilent + `bcn_suppressed` タグ)。`/bcn gun attach <p> grip|suppressor`。**検証済**: 装着で `data={grip:1b,suppressor:1b}`、発射 Success
+- **shop 取引履歴**: `ShopBlockEntity` に直近10件の販売履歴 (揮発性、非永続化)。`/bcn shop history <pos>`。**検証済**: fake購入後に "buyer1 bought 1xminecraft:diamond for 500 MD" 出力
+- **クライアント**: 新ブロック全般を Xvfb で描画確認 (solar_panel/bundled_wire/frame/frame_motor/色付きwire)
+
+## 検証ノート (追加3)
+
+- **スポーンチャンク外は tick しない**: `setworldspawn` でスポーンが動くと、setblock/fill は成功するがブロックの scheduled tick が走らず「ワイヤが反応しない」に見える。`forceload query` で対象チャンクが forceload 済みか確認し、未ロードなら spawn 近くか forceload 下でテストすること。今回 spawn を 620,64,620 に移した際 x=120 付近が非tick領域になり全ワイヤが沈黙した
+- **26.3 の絶縁ワイヤ自己ラッチ対策**: ワイヤ→導体(床)→弱電力漏れ→ワイヤ が自己持続ループになるため、`getDirectSignal` は導体ブロックへ 0 を返す (読み手 = `pos.relative(direction.getOpposite())`)。ゲート/モーターは導体なので読めなくなる → `LogicGateBlockEntity.powered()`/`FrameMotorBlock` は instanceof で wire の POWER を直接読む
+- bundled_wire は「バス全体=全外部入力のOR」をネットワーク単位で再計算する (局所ORだと相互ラッチ)。絶縁ワイヤの `BUNDLED` フラグで bus 出力を入力へ逆流させない

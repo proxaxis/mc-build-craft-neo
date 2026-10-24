@@ -54,6 +54,10 @@ public final class BCNBlocks {
     public static Block INSULATED_WIRE_RED;
     public static Block INSULATED_WIRE_GREEN;
     public static Block INSULATED_WIRE_BLUE;
+    public static Block BUNDLED_WIRE;
+    public static Block FRAME;
+    public static Block FRAME_MOTOR;
+    public static Block SOLAR_PANEL;
 
     public static void register() {
         STIRLING_ENGINE = machine("stirling_engine", StirlingEngineBlockEntity::new);
@@ -105,6 +109,12 @@ public final class BCNBlocks {
                 p -> new InsulatedWireBlock(p, "green"), wireProps());
         INSULATED_WIRE_BLUE = block("insulated_wire_blue",
                 p -> new InsulatedWireBlock(p, "blue"), wireProps());
+        BUNDLED_WIRE = block("bundled_wire", BundledWireBlock::new, wireProps());
+        FRAME = block("frame", Block::new,
+                BlockBehaviour.Properties.of().strength(1.0f).sound(SoundType.METAL));
+        FRAME_MOTOR = block("frame_motor", FrameMotorBlock::new,
+                BlockBehaviour.Properties.of().strength(2.0f).sound(SoundType.METAL));
+        SOLAR_PANEL = machine("solar_panel", SolarPanelBlockEntity::new);
     }
 
     private static BlockBehaviour.Properties wireProps() {
@@ -184,6 +194,7 @@ public final class BCNBlocks {
                 case CraftingPipeBlockEntity e -> CraftingPipeBlockEntity.tick(level, pos, state, e);
                 case DimensionGateBlockEntity e -> DimensionGateBlockEntity.tick(level, pos, state, e);
                 case CompressorBlockEntity e -> CompressorBlockEntity.tick(level, pos, state, e);
+                case SolarPanelBlockEntity e -> SolarPanelBlockEntity.tick(level, pos, state, e);
                 default -> {}
             }
         }

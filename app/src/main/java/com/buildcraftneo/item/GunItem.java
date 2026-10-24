@@ -60,15 +60,25 @@ public class GunItem extends Item {
         }
         String rounds = roundsLoaded(stack);
         boolean scoped = hasScope(stack);
+        boolean grip = hasFlag(stack, "grip");
+        boolean silent = hasFlag(stack, "suppressor");
+        float velocity = scoped ? 8.0f : 5.0f;
+        float spread = pellets > 1 ? 6.0f : (scoped ? 0.1f : 1.0f);
+        if (grip) spread *= 0.5f;        // grip attachment: steadier aim
+        if (silent) spread *= 0.75f;     // suppressed muzzle steadies slightly
         Vec3 look = player.getLookAngle();
         for (int i = 0; i < pellets; i++) {
             Arrow bullet = new Arrow(sp.level(), sp,
                     new ItemStack(Items.ARROW), stack);
             bullet.setPos(player.getX() + look.x, player.getEyeY() + look.y, player.getZ() + look.z);
-            bullet.shoot(look.x, look.y, look.z, scoped ? 8.0f : 5.0f,
-                    pellets > 1 ? 6.0f : (scoped ? 0.1f : 1.0f));
+            bullet.shoot(look.x, look.y, look.z, velocity, spread);
             double dmg = rounds.equals("ap") ? damage * 1.5 : damage;
             if (scoped) dmg *= 1.25;   // scope attachment: +25% damage
+            if (silent) {
+                dmg *= 0.9;            // suppressor: subsonic load, -10% damage
+                bullet.setSilent(true);
+                bullet.addTag("bcn_suppressed");
+            }
             bullet.setBaseDamage(dmg);
             if (rounds.equals("ap")) {
                 bullet.setCritArrow(true);
@@ -113,6 +123,16 @@ public class GunItem extends Item {
     public static void setScope(ItemStack stack) {
         CustomData.update(DataComponents.CUSTOM_DATA, stack,
                 t -> t.putBoolean("scope", true));
+    }
+
+    /** Generic boolean attachment flag (grip/suppressor). */
+    public static boolean hasFlag(ItemStack stack, String key) {
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        return data != null && data.copyTag().getBooleanOr(key, false);
+    }
+
+    public static void setFlag(ItemStack stack, String key) {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, t -> t.putBoolean(key, true));
     }
 
     /** Consume one ammo item from the inventory and refill the magazine. */

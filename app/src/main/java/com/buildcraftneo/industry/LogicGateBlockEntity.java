@@ -80,8 +80,12 @@ public class LogicGateBlockEntity extends BlockEntity {
     }
 
     private static boolean powered(Level level, BlockPos pos, Direction inputSide) {
-        // Read both weak and direct signals so insulated_wire (direct-only) can feed gates.
         BlockPos nb = pos.relative(inputSide);
+        // insulated wires withhold their direct signal from conductor blocks
+        // like this gate (true insulation), so read the wire power directly.
+        if (level.getBlockState(nb).getBlock() instanceof InsulatedWireBlock) {
+            return level.getBlockState(nb).getValue(InsulatedWireBlock.POWER) > 0;
+        }
         return level.getSignal(nb, inputSide) > 0
                 || level.getDirectSignal(nb, inputSide) > 0;
     }

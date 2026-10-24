@@ -23,6 +23,8 @@ public class ShopBlockEntity extends MachineBlockEntity {
     private long price;
     private long earnings;
     private String owner = "";
+    /** Last N sale lines (volatile - not persisted). */
+    private final java.util.ArrayDeque<String> history = new java.util.ArrayDeque<>();
 
     public ShopBlockEntity(BlockPos pos, BlockState state) {
         super(BCNBlockEntities.SHOP, pos, state, SLOTS);
@@ -60,6 +62,9 @@ public class ShopBlockEntity extends MachineBlockEntity {
                 if (!p.getInventory().add(one)) {
                     p.drop(one, false, net.minecraft.util.Prediction.SERVER_ONLY);
                 }
+                if (history.size() >= 10) history.pollFirst();
+                history.addLast(p.getName().getString() + " bought 1x"
+                        + BuiltInRegistries.ITEM.getKey(offer) + " for " + price + " MD");
                 setChanged();
                 return "sold 1x" + BuiltInRegistries.ITEM.getKey(offer)
                         + " for " + price + " MD";
@@ -81,6 +86,10 @@ public class ShopBlockEntity extends MachineBlockEntity {
         Profiles.addMd(p, e);
         setChanged();
         return e;
+    }
+
+    public java.util.List<String> history() {
+        return java.util.List.copyOf(history);
     }
 
     public String offerId() {

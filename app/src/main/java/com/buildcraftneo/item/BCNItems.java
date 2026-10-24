@@ -103,14 +103,24 @@ public final class BCNItems {
     public static Item LICH_SCEPTER;
     public static Item ZOMBIE_SCEPTER;
     public static Item NAGA_CHESTPLATE;
+    public static Item NAGA_LEGGINGS;
+    public static Item LICH_CROWN;
 
     // IC2 powered armor (approximation: constant effects, no EU charge)
     public static Item NANO_CHESTPLATE;
     public static Item QUANTUM_CHESTPLATE;
+    public static Item NANO_HELMET;
+    public static Item NANO_LEGGINGS;
+    public static Item NANO_BOOTS;
+    public static Item QUANTUM_HELMET;
+    public static Item QUANTUM_LEGGINGS;
+    public static Item QUANTUM_BOOTS;
 
     // Point Blank attachments
     public static Item EXT_MAG;
     public static Item SCOPE;
+    public static Item GRIP;
+    public static Item SUPPRESSOR;
 
     /** MD value of each coin tier. */
     public static final java.util.Map<Item, Long> COIN_VALUES = new java.util.LinkedHashMap<>();
@@ -183,13 +193,42 @@ public final class BCNItems {
         LICH_SCEPTER = lichScepter("lich_scepter");
         ZOMBIE_SCEPTER = zombieScepter("zombie_scepter");
         NAGA_CHESTPLATE = armor("naga_chestplate",
-                net.minecraft.world.item.equipment.ArmorMaterials.DIAMOND);
+                net.minecraft.world.item.equipment.ArmorMaterials.DIAMOND,
+                net.minecraft.world.item.equipment.ArmorType.CHESTPLATE);
+        NAGA_LEGGINGS = armor("naga_leggings",
+                net.minecraft.world.item.equipment.ArmorMaterials.DIAMOND,
+                net.minecraft.world.item.equipment.ArmorType.LEGGINGS);
+        LICH_CROWN = armor("lich_crown",
+                net.minecraft.world.item.equipment.ArmorMaterials.GOLD,
+                net.minecraft.world.item.equipment.ArmorType.HELMET);
         NANO_CHESTPLATE = armor("nano_chestplate",
-                net.minecraft.world.item.equipment.ArmorMaterials.DIAMOND);
+                net.minecraft.world.item.equipment.ArmorMaterials.DIAMOND,
+                net.minecraft.world.item.equipment.ArmorType.CHESTPLATE);
         QUANTUM_CHESTPLATE = armor("quantum_chestplate",
-                net.minecraft.world.item.equipment.ArmorMaterials.NETHERITE);
+                net.minecraft.world.item.equipment.ArmorMaterials.NETHERITE,
+                net.minecraft.world.item.equipment.ArmorType.CHESTPLATE);
+        NANO_HELMET = armor("nano_helmet",
+                net.minecraft.world.item.equipment.ArmorMaterials.DIAMOND,
+                net.minecraft.world.item.equipment.ArmorType.HELMET);
+        NANO_LEGGINGS = armor("nano_leggings",
+                net.minecraft.world.item.equipment.ArmorMaterials.DIAMOND,
+                net.minecraft.world.item.equipment.ArmorType.LEGGINGS);
+        NANO_BOOTS = armor("nano_boots",
+                net.minecraft.world.item.equipment.ArmorMaterials.DIAMOND,
+                net.minecraft.world.item.equipment.ArmorType.BOOTS);
+        QUANTUM_HELMET = armor("quantum_helmet",
+                net.minecraft.world.item.equipment.ArmorMaterials.NETHERITE,
+                net.minecraft.world.item.equipment.ArmorType.HELMET);
+        QUANTUM_LEGGINGS = armor("quantum_leggings",
+                net.minecraft.world.item.equipment.ArmorMaterials.NETHERITE,
+                net.minecraft.world.item.equipment.ArmorType.LEGGINGS);
+        QUANTUM_BOOTS = armor("quantum_boots",
+                net.minecraft.world.item.equipment.ArmorMaterials.NETHERITE,
+                net.minecraft.world.item.equipment.ArmorType.BOOTS);
         EXT_MAG = simple("ext_mag");
         SCOPE = simple("scope");
+        GRIP = simple("grip");
+        SUPPRESSOR = simple("suppressor");
 
         COIN_VALUES.put(COPPER_COIN, 1L);
         COIN_VALUES.put(IRON_COIN, 10L);
@@ -312,13 +351,13 @@ public final class BCNItems {
     }
 
     private static Item armor(String name,
-            net.minecraft.world.item.equipment.ArmorMaterial material) {
+            net.minecraft.world.item.equipment.ArmorMaterial material,
+            net.minecraft.world.item.equipment.ArmorType type) {
         Identifier id = BCN.id(name);
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
         return Registry.register(BuiltInRegistries.ITEM, id,
                 new Item(new Item.Properties().setId(key).stacksTo(1)
-                        .humanoidArmor(material,
-                                net.minecraft.world.item.equipment.ArmorType.CHESTPLATE)));
+                        .humanoidArmor(material, type)));
     }
 
     /** Twilight Forest-style zombie scepter: summons three zombie minions. */

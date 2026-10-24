@@ -126,7 +126,10 @@ public final class BCNCommands {
                         .then(Commands.literal("menu").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
                                 .then(Commands.argument("player", StringArgumentType.word())
-                                        .executes(BCNCommands::machineMenu)))))
+                                        .executes(BCNCommands::machineMenu))))
+                        .then(Commands.literal("nudge").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .executes(BCNCommands::machineNudge))))
                 .then(Commands.literal("shop")
                         .then(Commands.literal("offer").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
@@ -140,7 +143,10 @@ public final class BCNCommands {
                         .then(Commands.literal("menu").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
                                 .then(Commands.argument("player", StringArgumentType.word())
-                                        .executes(BCNCommands::shopMenu)))))
+                                        .executes(BCNCommands::shopMenu))))
+                        .then(Commands.literal("history").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .executes(BCNCommands::shopHistory))))
                 .then(Commands.literal("auction")
                         .then(Commands.literal("list").executes(BCNCommands::auctionList))
                         .then(Commands.literal("sell").then(Commands.argument("player", StringArgumentType.word())
@@ -516,8 +522,11 @@ public final class BCNCommands {
         if (p == null) return 0;
         var input = net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "item");
         ItemStack stack = input.createItemStack(1);
-        p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, stack);
-        tell(ctx, "equipped " + stack.getHoverName().getString() + " on "
+        var eq = stack.get(net.minecraft.core.component.DataComponents.EQUIPPABLE);
+        net.minecraft.world.entity.EquipmentSlot slot = eq != null ? eq.slot()
+                : net.minecraft.world.entity.EquipmentSlot.CHEST;
+        p.setItemSlot(slot, stack);
+        tell(ctx, "equipped " + stack.getHoverName().getString() + " (" + slot + ") on "
                 + p.getName().getString());
         return 1;
     }
@@ -676,10 +685,12 @@ public final class BCNCommands {
         net.minecraft.world.item.Item need = switch (att) {
             case "ext_mag" -> com.buildcraftneo.item.BCNItems.EXT_MAG;
             case "scope" -> com.buildcraftneo.item.BCNItems.SCOPE;
+            case "grip" -> com.buildcraftneo.item.BCNItems.GRIP;
+            case "suppressor" -> com.buildcraftneo.item.BCNItems.SUPPRESSOR;
             default -> null;
         };
         if (need == null) {
-            tell(ctx, "unknown attachment " + att + " (ext_mag|scope)");
+            tell(ctx, "unknown attachment " + att + " (ext_mag|scope|grip|suppressor)");
             return 0;
         }
         var inv = p.getInventory();
@@ -694,9 +705,43 @@ public final class BCNCommands {
                     com.buildcraftneo.item.GunItem.bonusMags(held) + 1);
             tell(ctx, "ext_mag attached (bonus mags="
                     + com.buildcraftneo.item.GunItem.bonusMags(held) + ")");
-        } else {
+        } else if (att.equals("scope")) {
             com.buildcraftneo.item.GunItem.setScope(held);
             tell(ctx, "scope attached");
+        } else {
+            com.buildcraftneo.item.GunItem.setFlag(held, att);
+            tell(ctx, att + " attached");
+        }
+        return 1;
+    }
+
+    /** Nudge a frame motor once (test hook for the redstone edge trigger). */
+    private static int machineNudge(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var level = ctx.getSource().getLevel();
+        var state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof com.buildcraftneo.industry.FrameMotorBlock)) {
+            ctx.getSource().sendFailure(Component.literal("no frame motor at " + pos.toShortString()));
+            return 0;
+        }
+        boolean moved = com.buildcraftneo.industry.FrameMotorBlock.move(level, pos,
+                state.getValue(com.buildcraftneo.industry.FrameMotorBlock.FACING));
+        tell(ctx, "frame motor nudge -> " + (moved ? "moved" : "no frame / blocked"));
+        return moved ? 1 : 0;
+    }
+
+    private static int shopHistory(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.ShopBlockEntity shop)) {
+            ctx.getSource().sendFailure(Component.literal("no shop at " + pos.toShortString()));
+            return 0;
+        }
+        var lines = shop.history();
+        if (lines.isEmpty()) {
+            tell(ctx, "no sales yet");
+        } else {
+            for (String line : lines) tell(ctx, "  " + line);
         }
         return 1;
     }

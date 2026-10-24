@@ -116,5 +116,19 @@
   "item.buildcraftneo.nano_chestplate": "NanoSuit Chestplate",
   "item.buildcraftneo.quantum_chestplate": "QuantumSuit Chestplate",
   "item.buildcraftneo.ext_mag": "Extended Magazine",
-  "item.buildcraftneo.scope": "ACOG Scope"
+  "item.buildcraftneo.scope": "ACOG Scope",
+  "block.buildcraftneo.bundled_wire": "Bundled Wire",
+  "block.buildcraftneo.frame": "Frame",
+  "block.buildcraftneo.frame_motor": "Frame Motor",
+  "block.buildcraftneo.solar_panel": "Solar Panel",
+  "item.buildcraftneo.nano_helmet": "NanoSuit Helmet",
+  "item.buildcraftneo.nano_leggings": "NanoSuit Leggings",
+  "item.buildcraftneo.nano_boots": "NanoSuit Boots",
+  "item.buildcraftneo.quantum_helmet": "QuantumSuit Helmet",
+  "item.buildcraftneo.quantum_leggings": "QuantumSuit Leggings",
+  "item.buildcraftneo.quantum_boots": "QuantumSuit Boots",
+  "item.buildcraftneo.naga_leggings": "Naga Leggings",
+  "item.buildcraftneo.lich_crown": "Lich Crown",
+  "item.buildcraftneo.grip": "Foregrip",
+  "item.buildcraftneo.suppressor": "Suppressor"
 }

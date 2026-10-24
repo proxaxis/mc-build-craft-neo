@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/cube_bottom_top", "textures": {"top": "buildcraftneo:block/solar_panel_top", "side": "buildcraftneo:block/solar_panel_side", "bottom": "buildcraftneo:block/solar_panel_bottom"}}

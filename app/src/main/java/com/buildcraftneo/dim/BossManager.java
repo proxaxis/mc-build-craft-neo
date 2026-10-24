@@ -119,6 +119,8 @@ public final class BossManager {
             } else if (t != null && t.bossIndex == 2) {
                 Block.popResource(level, entity.blockPosition(),
                         new ItemStack(com.buildcraftneo.item.BCNItems.LICH_SCEPTER, 1));
+                Block.popResource(level, entity.blockPosition(),
+                        new ItemStack(com.buildcraftneo.item.BCNItems.LICH_CROWN, 1));
             }
         });
     }
