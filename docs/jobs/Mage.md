@@ -1,52 +1,48 @@
-# Mage — 魔道士
+# 魔道士 - Mage
 
-> **陣営**: 魔法技術陣営 / **役割**: 広範囲術者（範囲殲滅・属性砲台）
-> **源流MOD**: Iron's Spells 'n Spellbooks
-> **MOD詳細**: [IronsSpells.md](../mods/IronsSpells.md)
+> 魔法技術陣営 / 広範囲術者
 
-膨大なマナを駆使し、9 つの魔法学派・100 以上のスペルで敵集団を一掃する砲台役。
-源流 MOD の設計では、魔道士は**最も深いリソース管理を要する職** ——
-マナ・詠唱時間・クールダウン・スペルレベル・学派パワーの全てを組み合わせて火力を設計する。
+膨大なマナを駆使し、9 つの魔法学派、100 以上のスペルで敵集団を一掃する砲台役. 源流 MOD の設計では、魔道士は最も深いリソース管理を要する職. マナ、詠唱時間、クールダウン、スペルレベル、学派パワーの全てを組み合わせて火力を設計する. 
 
 ## できること
 
-- **全 9 学派 111 スペルへのアクセス**: Blood/Ender/Evocation/Fire/Holy/Ice/Lightning/Nature/Eldritch。
-- **スペルブック運用**: スロット数付きの魔法書にスペルを刻み、R キー等で切替詠唱。
-- **スクロール作成**: Scroll Forge / Inscription Table で紙+インクを刻み、単発消費スクロールの量産・レベルアップ。
-- **学派装備で火力設計**: 学派ごとの法衣・リング・オーブで特定属性の威力を最大化。
-- **武器スロットスペル**: 一部武器にスペルホットバーが内蔵される。
+- 全 9 学派 111 スペルへのアクセス: Blood/Ender/Evocation/Fire/Holy/Ice/Lightning/Nature/Eldritch. 
+- スペルブック運用: スロット数付きの魔法書にスペルを刻み、R キー等で切替詠唱. 
+- スクロール作成: Scroll Forge / Inscription Table で紙+インクを刻み、単発消費スクロールの量産、レベルアップ. 
+- 学派装備で火力設計: 学派ごとの法衣、リング、オーブで特定属性の威力を最大化. 
+- 武器スロットスペル: 一部武器にスペルホットバーが内蔵される. 
 
-## できないこと・制約
+## できないこと、制約
 
-- **弓・クロスボウは装備不可**（Archer のみ）。
-- **極めて紙装甲**: 防御面のボーナスを持たず、接敵されると一瞬で沈む。前衛（Guardian/Warrior）の後方で戦うのが鉄則。
-- **マナが命**: 全火力がマナ依存。詠唱中は無防備 — 詠唱時間の長い大技は味方のカバーが前提。
-- **スペルレベル制**: スペルは低レベルから始まり、スクロールや装備で強化していく。
+- 弓、クロスボウは装備不可. 
+- 極めて紙装甲: 防御面のボーナスを持たず、接敵されると一瞬で沈む. 前衛（Guardian/Warrior）の後方で戦うのが鉄則. 
+- マナが命: 全火力がマナ依存. 詠唱中は無防備 - 詠唱時間の長い大技は味方のカバーが前提. 
+- スペルレベル制: スペルは低レベルから始まり、スクロールや装備で強化していく. 
 
 ## 魔法システム（Iron's Spells 'n Spellbooks）
 
 | 要素 | 内容 |
 | :--- | :--- |
-| **マナ（Mana）** | スペル詠唱で消費、時間経過で自動回復。装具・属性で最大値/回復力を強化 |
-| **詠唱方式（CastType）** | instant（即発）/ long（溜め詠唱）/ continuous（継続詠唱）/ charge など、スペルごとに異なる |
-| **学派 × スペルパワー** | 装備やポーションで学派ごとの火力を伸ばす。敵側にも学派別の弱点/耐性がある |
-| **スペルレベル** | スペルごとに最大 Lv10 前後。レベルで威力・効果時間・弾数が伸びる |
-| **スペルブック** | スロット数付き魔法書にスペルを刻んで切替詠唱。スクロール（単発消費）もある |
-| **スクロール作成** | Scroll Forge / Inscription Table で紙+インクを刻んでスクロール化・複製習得・レベルアップ |
-| **武器スロット** | 一部武器にスペルホットバー内蔵 |
-| **ステータス効果** | Abyssal Shroud（全攻撃回避）、Evasion（被撃時ワープ）、Guided、Echoing Strikes、Blighted、Chilled、Frostbite 等数十種 |
+| マナ（Mana） | スペル詠唱で消費、時間経過で自動回復. 装具、属性で最大値/回復力を強化 |
+| 詠唱方式（CastType） | instant（即発）/ long（溜め詠唱）/ continuous（継続詠唱）/ charge など、スペルごとに異なる |
+| 学派 × スペルパワー | 装備やポーションで学派ごとの火力を伸ばす. 敵側にも学派別の弱点/耐性がある |
+| スペルレベル | スペルごとに最大 Lv10 前後. レベルで威力、効果時間、弾数が伸びる |
+| スペルブック | スロット数付き魔法書にスペルを刻んで切替詠唱. スクロール（単発消費）もある |
+| スクロール作成 | Scroll Forge / Inscription Table で紙+インクを刻んでスクロール化、複製習得、レベルアップ |
+| 武器スロット | 一部武器にスペルホットバー内蔵 |
+| ステータス効果 | Abyssal Shroud（全攻撃回避）、Evasion（被撃時ワープ）、Guided、Echoing Strikes、Blighted、Chilled、Frostbite 等数十種 |
 
 ### 関連コンテンツ
 
-- **ブロック**: Inscription Table、Scroll Forge、Arcane Anvil、Alchemist Cauldron、Portal Frame、Mithril 鉱石、Wisewood 本棚
-- **防具**: 学派ごとの法衣セット（Pyromancer/Cryomancer/Electromancer/Cultist/Plagued/Archevoker/Priest/Shadowwalker 等）＋ネザライト系上位装
-- **リング/護符**: Mana Ring、Cast Time Ring、Cooldown Ring、Affinity Ring（学派強化）、各種 Ward Ring 等
-- **アップグレード**: `*_upgrade_orb` で装備強化（mana/cooldown/学派別）
-- **モブ/ボス**: Dead King、Archevoker、Pyromancer、Cryomancer、Priest、Necromancer 等 + 構造物
+- ブロック: Inscription Table、Scroll Forge、Arcane Anvil、Alchemist Cauldron、Portal Frame、Mithril 鉱石、Wisewood 本棚
+- 防具: 学派ごとの法衣セット（Pyromancer/Cryomancer/Electromancer/Cultist/Plagued/Archevoker/Priest/Shadowwalker 等）＋ネザライト系上位装
+- リング/護符: Mana Ring、Cast Time Ring、Cooldown Ring、Affinity Ring（学派強化）、各種 Ward Ring 等
+- アップグレード: `*_upgrade_orb` で装備強化（mana/cooldown/学派別）
+- モブ/ボス: Dead King、Archevoker、Pyromancer、Cryomancer、Priest、Necromancer 等 + 構造物
 
-## 全スペル一覧（学派別・111 種）
+## 全スペル一覧（学派別、111 種）
 
-### Fire（火 — 13 種）: 範囲殲滅の主学派
+### Fire（火 - 13 種）: 範囲殲滅の主学派
 
 | スペル | 効果 |
 | :--- | :--- |
@@ -64,7 +60,7 @@
 | Fire Arrow | 炎の矢を放つ |
 | Raise Hell | 地面を割って業火の柱を噴き上げる範囲技 |
 
-### Ice（氷 — 12 種）: 制御・足止めの主学派
+### Ice（氷 - 12 種）: 制御、足止めの主学派
 
 | スペル | 効果 |
 | :--- | :--- |
@@ -81,13 +77,13 @@
 | Frostbite | 付与中、完全凍結した敵を倒すと Ice Shadow に変える |
 | Blizzard | 吹雪を発生し範囲内を継続凍結 |
 
-### Lightning（雷 — 10 種）: 連鎖・高火力
+### Lightning（雷 - 10 種）: 連鎖、高火力
 
 | スペル | 効果 |
 | :--- | :--- |
 | Ascension | 上昇して浮遊（近接回避+位置取り） |
 | Chain Lightning | 敵間を跳ぶ連鎖雷 |
-| Charge | 自分を帯電させ攻撃力・速度上昇 |
+| Charge | 自分を帯電させ攻撃力、速度上昇 |
 | Electrocute | 対象へ直接感電の連続ダメージ |
 | Lightning Bolt | 雷を召喚して落雷させる |
 | Lightning Lance | 雷の槍を一直線に放つ |
@@ -96,7 +92,7 @@
 | Ball Lightning | ゆっくり進み敵へ感電させる球電 |
 | Volt Strike | 突進して電撃で抜き斬る |
 
-### Ender（エンダー — 16 種）: 移動・召喚・汎用
+### Ender（エンダー - 16 種）: 移動、召喚、汎用
 
 | スペル | 効果 |
 | :--- | :--- |
@@ -117,7 +113,7 @@
 | Arcane Shackle | 対象を魔法の枷で拘束し移動阻止 |
 | Gravity Fissure | 地面を割って反重力の裂け目を作り敵を打ち上げる |
 
-### Evocation（召喚/力業 — 17 種）: 設置・召喚・物理魔法
+### Evocation（召喚/力業 - 17 種）: 設置、召喚、物理魔法
 
 | スペル | 効果 |
 | :--- | :--- |
@@ -139,22 +135,22 @@
 | Throw | 対象のブロック/実体を掴んで投げる |
 | Scapegoat | 自分の身代わり人形を置いて敵の注意を引く |
 
-### Blood（血 — 10 種）: 体力交換・吸収
+### Blood（血 - 10 種）: 体力交換、吸収
 
 | スペル | 効果 |
 | :--- | :--- |
 | Acupuncture | 触れた対象に針を刺し継続ダメージ+治癒阻害 |
 | Blood Needles | 血の針を連射し貫通ダメージ |
-| Blood Slash | 血の斬撃を飛ばす飛び道具。命中で自分を治癒 |
+| Blood Slash | 血の斬撃を飛ばす飛び道具. 命中で自分を治癒 |
 | Blood Step | 前方へ瞬間移動し残像で視線を逸らす |
 | Devour | 近接対象を食らって体力奪取 |
 | Heartstop | 対象の心臓を止める即死級詠唱（対象HP依存） |
-| Raise Dead | 死体/地面からスケルトン・ゾンビの眷属を召喚 |
+| Raise Dead | 死体/地面からスケルトン、ゾンビの眷属を召喚 |
 | Ray of Siphoning | 継続ビームで対象の体力を吸い続ける |
 | Sacrifice | 自分の召喚物を生贄にして大ダメージ |
 | Wither Skull | ウィザースカルを発射（枯死付与） |
 
-### Holy（聖 — 13 種）: 回復・聖属性 ※Healer と共通領域
+### Holy（聖 - 13 種）: 回復、聖属性 ※Healer と共通領域
 
 | スペル | 効果 |
 | :--- | :--- |
@@ -169,20 +165,20 @@
 | Sunbeam | 天からの光柱で範囲焼き（アンデッド特効） |
 | Wisp | 自分の回りを回る回復ウィスプを召喚 |
 | Divine Smite | 聖なる雷で対象を撃つ |
-| Haste | 移動・攻撃速度を上げるバフ |
+| Haste | 移動、攻撃速度を上げるバフ |
 | Cleanse | 自分/味方のデバフを除去 |
 
-### Nature（自然 — 13 種）: 毒・拘束・変身
+### Nature（自然 - 13 種）: 毒、拘束、変身
 
 | スペル | 効果 |
 | :--- | :--- |
 | Acid Orb | 着弾で酸を撒く弾（防具劣化/継続ダメ） |
-| Blight | 対象に Blighted を付与（与ダメ減・被回復減） |
+| Blight | 対象に Blighted を付与（与ダメ減、被回復減） |
 | Poison Arrow | 毒の矢を放つ |
 | Poison Breath | 前方へ毒の息を吐き続ける |
 | Poison Splash | 毒の飛沫を扇状にばら撒く |
 | Root | 対象を根で拘束し動けなくする |
-| Spider Aspect | 壁登り・毒耐性など蜘蛛化バフ |
+| Spider Aspect | 壁登り、毒耐性など蜘蛛化バフ |
 | Firefly Swarm | ホタルの群れを召喚して敵を撹乱/攻撃 |
 | Oakskin | 皮膚を樹皮化して被ダメージ軽減 |
 | Earthquake | 周囲に地震波を起こして敵を吹き飛ばす |
@@ -190,7 +186,7 @@
 | Gluttony | 食事でマナを回復する状態にする |
 | Touch Dig | 触れたブロックを採掘する魔法 |
 
-### Eldritch（深淵 — 7 種）: 禁忌・最上位
+### Eldritch（深淵 - 7 種）: 禁忌、最上位
 
 | スペル | 効果 |
 | :--- | :--- |
@@ -204,23 +200,23 @@
 
 ## 立ち回りガイド
 
-- **学派を絞れ**: 全学派を均等に使うより、Fire（殲滅）/ Ice（制御）/ Lightning（連鎖）など主力学派を決めて装備・オーブを集中させる方が強い。
-- **制御→殲滅の型**: Ice で足止め（Cone of Cold / Blizzard / Ice Tomb）→ Fire で焼く（Fireball / Blaze Storm / Raise Hell）が基本コンボ。
-- **詠唱中は無防備**: long/continuous 詠唱の大技は、Guardian が敵を止めている間に撃つ。単騎では instant/charge 中心に。
-- **緊急離脱を常に持て**: Ender の Teleport / Evasion / Blood Step、Holy の Angel Wings のいずれかをホットバーに入れておく。
-- **スクロール経済**: Inscription Table で高レベルスクロールを量産すれば、スペルブックのスロットを占有せず大技を持ち運べる。
-- **災害防衛**: 襲撃の集団を範囲魔法で一掃する主力。Black Hole で集めて Blaze Storm、Arrow Volley で面制圧。
-- **異世界遠征**: 黄昏の森の雑魚集団処理・厄災ボスの周辺掃討に適任。狭い洞窟では Fireball 等の自爆に注意。
+- 学派を絞れ: 全学派を均等に使うより、Fire（殲滅）/ Ice（制御）/ Lightning（連鎖）など主力学派を決めて装備、オーブを集中させる方が強い. 
+- 制御→殲滅の型: Ice で足止め（Cone of Cold / Blizzard / Ice Tomb）→ Fire で焼く（Fireball / Blaze Storm / Raise Hell）が基本コンボ. 
+- 詠唱中は無防備: long/continuous 詠唱の大技は、Guardian が敵を止めている間に撃つ. 単騎では instant/charge 中心に. 
+- 緊急離脱を常に持て: Ender の Teleport / Evasion / Blood Step、Holy の Angel Wings のいずれかをホットバーに入れておく. 
+- スクロール経済: Inscription Table で高レベルスクロールを量産すれば、スペルブックのスロットを占有せず大技を持ち運べる. 
+- 災害防衛: 襲撃の集団を範囲魔法で一掃する主力. Black Hole で集めて Blaze Storm、Arrow Volley で面制圧. 
+- 異世界遠征: 黄昏の森の雑魚集団処理、厄災ボスの周辺掃討に適任. 狭い洞窟では Fireball 等の自爆に注意. 
 
 ## お金の稼ぎ方
 
-- 範囲殲滅力を活かしたダンジョン高速周回・ドロップ素材の量産販売。
-- 高レベルスペルスクロール・学派装備・アップグレードオーブの売買。
-- 災害防衛の範囲火力担当としての報酬。
-- 魔導素材・魔法関連アイテムの売買（科学陣営が扱えない品ほど高値）。
+- 範囲殲滅力を活かしたダンジョン高速周回、ドロップ素材の量産販売. 
+- 高レベルスペルスクロール、学派装備、アップグレードオーブの売買. 
+- 災害防衛の範囲火力担当としての報酬. 
+- 魔導素材、魔法関連アイテムの売買（科学陣営が扱えない品ほど高値）. 
 
 ## こんな人に向いている
 
 - 一撃で画面を薙ぎ払う爽快感が好きな人
 - リソース管理と位置取りの頭脳プレイが好きな人
-- 「紙装甲でも最強火力」というロマンに燃える人
+-  "紙装甲でも最強火力" というロマンに燃える人
