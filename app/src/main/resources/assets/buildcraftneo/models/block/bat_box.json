@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/cube", "textures": {"down": "buildcraftneo:block/bat_box_bottom", "up": "buildcraftneo:block/bat_box_top", "north": "buildcraftneo:block/bat_box_front", "south": "buildcraftneo:block/bat_box_back", "east": "buildcraftneo:block/bat_box_side", "west": "buildcraftneo:block/bat_box_side", "particle": "buildcraftneo:block/bat_box_front"}}

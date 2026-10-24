@@ -158,5 +158,8 @@
   "block.buildcraftneo.wind_mill": "Wind Mill",
   "block.buildcraftneo.geothermal_generator": "Geothermal Generator",
   "block.buildcraftneo.sticky_frame": "Sticky Frame",
-  "block.buildcraftneo.anchored_frame": "Anchored Frame"
+  "block.buildcraftneo.anchored_frame": "Anchored Frame",
+  "block.buildcraftneo.bus_converter": "Bus Converter",
+  "block.buildcraftneo.bat_box": "BatBox",
+  "item.buildcraftneo.mining_laser": "Mining Laser"
 }

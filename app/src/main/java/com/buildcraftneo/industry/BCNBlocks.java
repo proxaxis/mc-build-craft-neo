@@ -63,6 +63,8 @@ public final class BCNBlocks {
     public static Block SOLAR_PANEL;
     public static Block WIND_MILL;
     public static Block GEOTHERMAL_GENERATOR;
+    public static Block BAT_BOX;
+    public static Block BUS_CONVERTER;
 
     /** Extra insulated-wire colors by color name (channels 4-15). */
     public static final java.util.Map<String, Block> INSULATED_WIRES =
@@ -141,6 +143,10 @@ public final class BCNBlocks {
         WIND_MILL = machine("wind_mill", WindMillBlockEntity::new);
         GEOTHERMAL_GENERATOR = machine("geothermal_generator",
                 GeothermalGeneratorBlockEntity::new);
+        BAT_BOX = machine("bat_box", BatBoxBlockEntity::new);
+        BUS_CONVERTER = block("bus_converter", BusConverterBlock::new,
+                BlockBehaviour.Properties.of().strength(1.5f).sound(SoundType.STONE)
+                        .isRedstoneConductor((state, level, pos) -> false));
     }
 
     private static BlockBehaviour.Properties wireProps() {
@@ -224,6 +230,7 @@ public final class BCNBlocks {
                 case WindMillBlockEntity e -> WindMillBlockEntity.tick(level, pos, state, e);
                 case GeothermalGeneratorBlockEntity e ->
                         GeothermalGeneratorBlockEntity.tick(level, pos, state, e);
+                case BatBoxBlockEntity e -> BatBoxBlockEntity.tick(level, pos, state, e);
                 default -> {}
             }
         }

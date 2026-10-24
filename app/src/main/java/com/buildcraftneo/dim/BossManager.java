@@ -155,10 +155,42 @@ public final class BossManager {
                 level.addFreshEntity(minion);
             }
         }
-        // phase 3 (<25% HP): one-time big burst + ignite
+        // phase 3 (<25% HP): one-time big burst + ignite, then meteors keep
+        // raining on the nearest player for the rest of the fight
         if (hp < 0.25f && (t.phaseFlags & 2) == 0) {
             t.phaseFlags |= 2;
             aoeSmash(level, b, 8.0, 12.0f, true);
+        }
+        if (hp < 0.25f && level.getGameTime() % 120 == 60) {
+            meteorStrike(level, b);
+        }
+    }
+
+    /**
+     * Cataclysm-style phase-3 continuous attack: fireballs rain down on the
+     * nearest player from above while the boss is below 25% HP.
+     */
+    private static void meteorStrike(ServerLevel level, LivingEntity boss) {
+        var box = boss.getBoundingBox().inflate(24.0);
+        var players = level.getEntitiesOfClass(
+                net.minecraft.server.level.ServerPlayer.class, box,
+                p -> p.isAlive() && !p.isSpectator());
+        if (players.isEmpty()) return;
+        var target = players.getFirst();
+        double best = target.distanceToSqr(boss);
+        for (var p : players) {
+            if (p.distanceToSqr(boss) < best) {
+                best = p.distanceToSqr(boss);
+                target = p;
+            }
+        }
+        for (int i = 0; i < 3; i++) {
+            double ox = (level.getRandom().nextDouble() - 0.5) * 4.0;
+            double oz = (level.getRandom().nextDouble() - 0.5) * 4.0;
+            var fb = new net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball(
+                    level, boss, new Vec3(0, -1.5, 0));
+            fb.setPos(target.getX() + ox, target.getY() + 6.0, target.getZ() + oz);
+            level.addFreshEntity(fb);
         }
     }
 

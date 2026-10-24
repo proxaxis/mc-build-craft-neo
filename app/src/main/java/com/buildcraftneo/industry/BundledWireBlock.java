@@ -98,6 +98,13 @@ public class BundledWireBlock extends Block implements EntityBlock {
             if (ns.getValue(ON) != (mask != 0)) {
                 level.setBlock(p, ns.setValue(ON, mask != 0), Block.UPDATE_ALL);
             }
+            // wake bus converters so their analog output tracks the new mask
+            for (Direction d : Direction.values()) {
+                BlockPos np = p.relative(d);
+                if (level.getBlockState(np).getBlock() instanceof BusConverterBlock conv) {
+                    level.scheduleTick(np, conv, 2);
+                }
+            }
         }
     }
 
@@ -120,6 +127,10 @@ public class BundledWireBlock extends Block implements EntityBlock {
                 }
             } else if (ns.getBlock() instanceof BundledWireBlock) {
                 // merged at network level
+            } else if (ns.getBlock() instanceof BusConverterBlock conv) {
+                // analog input on the converter's back face drives a channel;
+                // its output face must not count as a plain ch0 source
+                mask |= conv.injectedMask(level, nb, ns);
             } else {
                 int sig = Math.max(level.getSignal(nb, dir), level.getDirectSignal(nb, dir));
                 if (sig > 0) mask |= InsulatedWireBlock.bitFor("none");

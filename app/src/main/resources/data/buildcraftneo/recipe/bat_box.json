@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PWP",
+    "WWW",
+    "PPP"
+  ],
+  "key": {
+    "P": "minecraft:oak_planks",
+    "W": "buildcraftneo:insulated_wire"
+  },
+  "result": {
+    "id": "buildcraftneo:bat_box",
+    "count": 1
+  }
+}

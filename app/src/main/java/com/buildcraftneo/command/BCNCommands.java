@@ -376,8 +376,9 @@ public final class BCNCommands {
             fx.append(net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT
                     .getKey(e.getEffect().value())).append(' ');
         }
-        tell(ctx, String.format("%s: faction=%s job=%s md=%d mp=%d/%d xp=%d level=%d locks=%s fx=%s",
-                p.getName().getString(), Profiles.faction(p).id(), Profiles.job(p).id(),
+        tell(ctx, String.format("%s: pos=%s faction=%s job=%s md=%d mp=%d/%d xp=%d level=%d locks=%s fx=%s",
+                p.getName().getString(), p.blockPosition().toShortString(),
+                Profiles.faction(p).id(), Profiles.job(p).id(),
                 Profiles.md(p), Profiles.mp(p), Profiles.mpMax(p),
                 Profiles.xp(p), Profiles.level(p),
                 com.buildcraftneo.data.ItemLocks.describe(p),
@@ -414,7 +415,7 @@ public final class BCNCommands {
             return 0;
         }
         ItemStack stack = net.minecraft.commands.arguments.item.ItemArgument.getItem(ctx, "item")
-                .createItemStack(8);
+                .createItemStack(1);
         for (int i = 0; i < m.getContainerSize() && !stack.isEmpty(); i++) {
             ItemStack cur = m.getItem(i);
             if (cur.isEmpty()) {

@@ -202,3 +202,22 @@ Neo Builder MOD for Minecraft Fabric servers.
 - **カスタムパケット登録**: Fabric API 0.165 では `PayloadTypeRegistry.clientboundPlay()` (playS2C() は存在しない)。`RegistryFriendlyByteBuf` ベースの StreamCodec
 - **FakePlayer は tick しない**: MobEffect は自然消滅しない → 効果の解除検証には明示 remove が必要 (`bcn_ads` タグ方式)。付与自体は ArmorEffects の定期 tick (TestFakes.all() 経由) で動作する
 - **デプロイ失敗時の復帰**: 前回デプロイで datapack ロード失敗→コンテナ停止すると `--restart` が "container is not running" で失敗する → `docker start` で起動すれば新jarで立ち上がる
+
+## 追加実装 (commit 2bb1850 以降)
+
+- **ProjectRed bus_converter** (近似): FACING面=アナログ出力 (バス内の最大アクティブch番号 0-15 を出力)、背面=アナログ入力 (信号強度N→チャネルN駆動、1-15)、側面4面=bundled cable接続。`injectedMask()` を `BundledWireBlock.localInput` から読み、bundled tick が隣接 converter を scheduleTick して出力更新。無状態 (latchしない)。ch0("none")はアナログ表現なし。**検証済**: lever(15)→ch15→brown tap点灯+出力dust=15、red wire→ch1→出力dust=1、OFFで全クリア
+- **IC2 BatBox**: `bat_box` 機械 (EU容量40000、発電機からMJを1:1でEU扱いで受電、2スロット内の充電対応アイテムへ200EU/t充電)。`status()` が eu=/slot.charge= を表示。**検証済**: EU5000注入→mining_laserへ5000充電 (mj=0)
+- **IC2 mining_laser**: EU充電ツール (容量10000、1発500EU)。右クリで24ブロック先までの hit-scan ビーム、最初に当たったブロックを溶断 (destroyBlock)。EUは `CUSTOM_DATA.eu`。**検証済**: eu=10000付与→use→(-1,1,3)の石破壊+eu=9500、eu=400で FAIL
+- **Cataclysm フェーズ3継続技**: HP<25%で120tick毎に `meteorStrike` — 24ブロック内の最近プレイヤー直上+6に3発の降下SmallFireball。**検証済**: Xvfbクライアントログの `say` 出力 (METEOR_Y) と `if entity` でプレイヤー直上の降下弾を検出
+- **ATM GUIボタン**: `AtmActionPayload` (C2S、`serverboundPlay()` 登録)。AtmScreen右側Actionsパネルに "Deposit"/"Wd 500" ボタン → `ClientPlayNetworking.send`。サーバ側は `containerMenu instanceof AtmMenu && stillValid` で距離検証してから Mint.depositAll/withdraw(500)。**検証済**: XvfbでDepositクリック→残高777→1277、Wd 500→777に復帰+コイン付与
+- **アイテムモデル定義の修正**: `assets/buildcraftneo/items/*.json` を全162アイテム分生成 (26.xは items/ エントリが無いと missing texture)。これまで全MODアイテムが紫黒で描画されていたのを修正。**検証済**: Xvfbでコイン/mining_laser等が正常描画
+- **付随修正**: `/bcn machine insert` を createItemStack(1) 化 (stacksTo(1)アイテムで "can only stack up to 1" 失敗していた)、`fake status` に `pos=` 表示追加、`models/item/lamp.json` の親が `block/lamp` (無) → `block/lamp_off` に修正、`circuit` のitemモデル追加 (redstoneテクスチャ流用)
+
+## 検証ノート (追加5)
+
+- **`execute ... run say` は rcon-cli に出力が返らない** — 結果はゲーム内チャットのみ。判定には `execute if block/entity` 単体 ("Test passed/failed") を使うか、クライアントの latest.log の CHAT 行を見る
+- **FakePlayer の初期位置は (0,0,0)**、デフォルト視線はほぼ南 (+z 微斜め)。tick もエンティティ一覧にも載らない
+- **`/bcn fake give` はコンポーネント構文が使える**: `buildcraftneo:mining_laser[minecraft:custom_data={eu:10000}]` でNBT付き配布可能
+- **RCON で item_pipe のある場所に機械を置くと中身を吸われる** — テストは隔離場所で
+- **Xvfbウィンドウ名は `Minecraft* 26.3`** — `xdotool search --name Minecraft` は検出できないことがある。`mousemove + click` はアクティブ化なしでも効く
+- **海上テスト注意**: スポーン周辺は海面が深い。描画確認は y=150 程度のプラットフォーム上が確実

@@ -122,6 +122,9 @@ public final class BCNItems {
     public static Item GRIP;
     public static Item SUPPRESSOR;
 
+    // IC2 EU tool
+    public static Item MINING_LASER;
+
     /** MD value of each coin tier. */
     public static final java.util.Map<Item, Long> COIN_VALUES = new java.util.LinkedHashMap<>();
 
@@ -229,6 +232,12 @@ public final class BCNItems {
         SCOPE = simple("scope");
         GRIP = simple("grip");
         SUPPRESSOR = simple("suppressor");
+        {
+            Identifier id = BCN.id("mining_laser");
+            MINING_LASER = Registry.register(BuiltInRegistries.ITEM, id,
+                    new MiningLaserItem(new Item.Properties().stacksTo(1)
+                            .setId(ResourceKey.create(Registries.ITEM, id))));
+        }
 
         COIN_VALUES.put(COPPER_COIN, 1L);
         COIN_VALUES.put(IRON_COIN, 10L);

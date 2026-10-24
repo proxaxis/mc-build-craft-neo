@@ -22,6 +22,32 @@ public class BuildCraftNeo implements ModInitializer {
         net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.clientboundPlay()
                 .register(com.buildcraftneo.net.ShopHistoryPayload.TYPE,
                         com.buildcraftneo.net.ShopHistoryPayload.CODEC);
+        net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry.serverboundPlay()
+                .register(com.buildcraftneo.net.AtmActionPayload.TYPE,
+                        com.buildcraftneo.net.AtmActionPayload.CODEC);
+        net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+                .registerGlobalReceiver(com.buildcraftneo.net.AtmActionPayload.TYPE,
+                        (payload, context) -> {
+                            var p = context.player();
+                            if (!(p.containerMenu
+                                    instanceof com.buildcraftneo.industry.AtmMenu menu)
+                                    || !menu.stillValid(p)) {
+                                return;
+                            }
+                            if (payload.action()
+                                    == com.buildcraftneo.net.AtmActionPayload.DEPOSIT_ALL) {
+                                long deposited = com.buildcraftneo.economy.Mint.depositAll(p);
+                                p.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                                        "[BCN ATM] 入金 " + deposited + " MD (残高="
+                                                + com.buildcraftneo.data.Profiles.md(p) + ")"));
+                            } else if (payload.action()
+                                    == com.buildcraftneo.net.AtmActionPayload.WITHDRAW_500) {
+                                long out = com.buildcraftneo.economy.Mint.withdraw(p, 500);
+                                p.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                                        "[BCN ATM] 出金 " + out + " MD (残高="
+                                                + com.buildcraftneo.data.Profiles.md(p) + ")"));
+                            }
+                        });
         BCNAttachments.register();
         BCNItems.register();
         BCNBlocks.register();
