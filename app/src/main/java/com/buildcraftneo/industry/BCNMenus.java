@@ -11,11 +11,14 @@ public final class BCNMenus {
 
     public static MenuType<ShopMenu> SHOP;
     public static MenuType<AtmMenu> ATM;
+    public static MenuType<MachineMenu> MACHINE;
 
     public static void register() {
         SHOP = Registry.register(BuiltInRegistries.MENU, BCN.id("shop"),
                 new MenuType<>(ShopMenu::new, FeatureFlags.VANILLA_SET));
         ATM = Registry.register(BuiltInRegistries.MENU, BCN.id("atm"),
                 new MenuType<>(AtmMenu::new, FeatureFlags.VANILLA_SET));
+        MACHINE = Registry.register(BuiltInRegistries.MENU, BCN.id("machine"),
+                new MenuType<>(MachineMenu::new, FeatureFlags.VANILLA_SET));
     }
 }

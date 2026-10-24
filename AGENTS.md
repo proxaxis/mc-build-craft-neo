@@ -107,6 +107,7 @@ Neo Builder MOD for Minecraft Fabric servers.
 - **Cataclysm フェーズ**: BossManager が追跡ボスに攻撃フェーズを実装 — 80tick毎に半径5のAoEスマッシュ(6dmg+ノックバック)、HP<50%で "Monstrosity Minion" (WitherSkeleton+鉄剣) x2 召喚(1回)、HP<25%で半径8のバースト(12dmg+4s燃焼)。**検証済**: damage→HP50%でミニオン2体、AoEで隣接pigが死亡
 - **Twilight 進行ゲート**: boss_altar NBT `unlocked` (twilight次元のみ、ボスindex<=unlocked まで召喚可)。ボス討伐で `unlocked` が index+1 に解放 (BossManager が祭壇位置を追跡)。**検証済**: Lich選択→locked拒否、Knight討伐→unlocked=1→Naga召喚可
 - **ATM実GUI**: `AtmMenu` (9入金スロット+player inv、閉じるとコイン→MD変換、非コイン返却) + `AtmScreen` (クライアント)。atm右クリ=GUI、スニーク右クリ=500MD引出(従来通り)。`/bcn shop menu`/`fake menuopen` が atm も対応。**検証済**: fake menuopen→menuclick→menuclose で gold_coin x3→300MD、XvfbでAtmScreen描画確認
+- **機械共通GUI**: `MachineMenu` (任意 MachineBlockEntity のスロット≤9を表示、pos距離stillValid) + `MachineScreen` + `/bcn machine menu <pos> <player>`。`fake menuopen` も全機械に対応。**検証済**: fake menuopen で MachineMenu slots=39、Xvfbで MachineScreen(Compressor) 描画確認
 
 ## BASE_MOD_LIST 実装マトリクス (最終棚卸し)
 

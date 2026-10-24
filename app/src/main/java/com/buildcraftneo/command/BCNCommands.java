@@ -122,7 +122,11 @@ public final class BCNCommands {
                         .then(Commands.literal("boss").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
                                 .then(Commands.argument("index", IntegerArgumentType.integer(0))
-                                        .executes(BCNCommands::machineBoss)))))
+                                        .executes(BCNCommands::machineBoss))))
+                        .then(Commands.literal("menu").then(Commands.argument("pos",
+                                        net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                .then(Commands.argument("player", StringArgumentType.word())
+                                        .executes(BCNCommands::machineMenu)))))
                 .then(Commands.literal("shop")
                         .then(Commands.literal("offer").then(Commands.argument("pos",
                                         net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
@@ -582,6 +586,26 @@ public final class BCNCommands {
         return 1;
     }
 
+    private static int machineMenu(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        var pos = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        var be = ctx.getSource().getLevel().getBlockEntity(pos);
+        if (!(be instanceof com.buildcraftneo.industry.MachineBlockEntity m)) {
+            ctx.getSource().sendFailure(Component.literal("no machine at " + pos.toShortString()));
+            return 0;
+        }
+        ServerPlayer p = resolvePlayer(ctx, StringArgumentType.getString(ctx, "player"));
+        if (p == null) {
+            ctx.getSource().sendFailure(Component.literal("no player/fake"));
+            return 0;
+        }
+        var result = p.openMenu(new net.minecraft.world.SimpleMenuProvider(
+                (id, inv, pl) -> new com.buildcraftneo.industry.MachineMenu(id, inv, m,
+                        m.getBlockPos()),
+                Component.literal(m.getBlockState().getBlock().getName().getString())));
+        tell(ctx, "openMenu -> " + (result.isPresent() ? "containerId=" + result.getAsInt() : "refused"));
+        return result.isPresent() ? 1 : 0;
+    }
+
     private static int lockSlot(CommandContext<CommandSourceStack> ctx) {
         ServerPlayer p = resolvePlayer(ctx, StringArgumentType.getString(ctx, "player"));
         if (p == null) {
@@ -972,6 +996,9 @@ public final class BCNCommands {
                     new net.minecraft.world.SimpleContainer(
                             com.buildcraftneo.industry.AtmMenu.DEPOSIT_SLOTS),
                     atm.getBlockPos());
+        } else if (be instanceof com.buildcraftneo.industry.MachineBlockEntity m) {
+            menu = new com.buildcraftneo.industry.MachineMenu(1, p.getInventory(), m,
+                    m.getBlockPos());
         } else {
             ctx.getSource().sendFailure(Component.literal(
                     "no menu block at " + pos.toShortString()));

@@ -24,6 +24,7 @@ public class BuildCraftNeoClient implements ClientModInitializer {
     public void onInitializeClient() {
         MenuScreens.register(BCNMenus.SHOP, ShopScreen::new);
         MenuScreens.register(BCNMenus.ATM, AtmScreen::new);
+        MenuScreens.register(BCNMenus.MACHINE, MachineScreen::new);
         ModelLoadingPlugin.register(context -> context.modifyBlockModelAfterBake()
                 .register((model, ctx) -> {
                     Identifier tex = PIPE_TEXTURES.get(ctx.state().getBlock());
